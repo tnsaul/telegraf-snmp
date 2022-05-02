@@ -1,0 +1,711 @@
+RBT-STEELCENTRAL-PLATFORM-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    DisplayString FROM RFC1213-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Gauge32, Counter64,
+    Integer32, TimeTicks, mib-2, enterprises
+    FROM SNMPv2-SMI
+    rbt, productFamilies FROM RBT-MIB
+    steelCentral, scPlatform FROM RBT-PRODUCT-MIB;
+
+scPlatformMib MODULE-IDENTITY
+    LAST-UPDATED        "201806150000Z"
+    ORGANIZATION        "Riverbed Technology, Inc."
+    CONTACT-INFO
+    "   Riverbed Technical Support
+           support@riverbed.com"
+    DESCRIPTION         "Riverbed Technology SteelCentral NPM Platform MIB"
+
+    REVISION            "201806150000Z"
+    DESCRIPTION         "Initial Revision"
+    ::= { scPlatform 9999 }
+
+deviceInfo OBJECT IDENTIFIER ::= { scPlatform 1 }
+
+serial OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "The serial number of the appliance"
+    ::= { deviceInfo 1 }
+
+model OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "The model number of the appliance"
+    ::= { deviceInfo 2 }
+
+hardwareInfo OBJECT IDENTIFIER ::= { scPlatform 2 }
+
+diskTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF DiskEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of job entries"
+    ::= { hardwareInfo 1 }
+
+diskEntry  OBJECT-TYPE
+    SYNTAX        DiskEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of job information"
+    INDEX { diskId }
+    ::= { diskTable 1 }
+
+DiskEntry ::=
+    SEQUENCE {
+    diskStatus          INTEGER,
+    diskSize            INTEGER,
+    diskId              DisplayString,
+    diskChassis         DisplayString,
+    diskLocationCol     INTEGER,
+    diskLocationRow     INTEGER,
+    diskLocationLabel   DisplayString,
+    diskSerialNum       DisplayString,
+    diskType            DisplayString
+    }
+
+diskStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                ok(1),
+                failed(2), 
+                failing(3),
+                rebuilding(4),
+                missing(5),
+                invalid(6),
+                new(7)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "State of a disk. Values: ok, failed, failing, rebuilding, missing, invalid, new"
+    ::= { diskEntry 1 }
+
+diskSize OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Size in MB of the disk"
+    ::= { diskEntry 2 }
+
+diskId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "ID of the disk"
+    ::= { diskEntry 3 }
+
+diskChassis OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis the disk is in"
+    ::= { diskEntry 4 }
+
+diskLocationCol OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Column the disk is housed within the chassis"
+    ::= { diskEntry 5 }
+
+diskLocationRow OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Row the disk is housed within the chassis"
+    ::= { diskEntry 6 }
+
+diskLocationLabel OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Label of the disk within the chassis"
+    ::= { diskEntry 7 }
+
+diskSerialNum OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Disk Serial number"
+    ::= { diskEntry 8 }
+
+diskType OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Disk Type"
+    ::= { diskEntry 9 }
+
+
+chassisFanTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisFans
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of chassis PS"
+    ::= { hardwareInfo 2 }
+
+chassisFans  OBJECT-TYPE
+    SYNTAX        ChassisFans
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Each fan on a chassis"
+    INDEX { fanChassisId }
+    ::= { chassisFanTable 1 }
+
+ChassisFans ::=
+    SEQUENCE {
+        fanName    DisplayString,
+        fanStatus  DisplayString,
+        fanStatusMsg DisplayString,
+        fanSpeed    INTEGER,
+        fanChassisId  DisplayString
+    }
+
+fanName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Fane name"
+    ::= { chassisFans 1 }
+
+fanSpeed OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Fan speed"
+    ::= { chassisFans 2 }
+
+fanStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Fan status"
+    ::= { chassisFans 3 }
+
+fanStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status message"
+    ::= { chassisFans 4 }
+
+fanChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Each VIFG"
+    ::= { chassisFans 5 }
+
+chassisCPUTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisCPUs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of chassis CPUs"
+    ::= { hardwareInfo 3 }
+
+chassisCPUs  OBJECT-TYPE
+    SYNTAX        ChassisCPUs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Each processor on a chassis"
+    INDEX { cpuName }
+    ::= { chassisCPUTable 1 }
+
+ChassisCPUs ::=
+    SEQUENCE {
+        cpuName    DisplayString,
+        cpuStatus  DisplayString,
+        cpuStatusMsg DisplayString,
+        cpuTemp    INTEGER,
+        cpuChassisId  DisplayString
+    }
+
+cpuName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Processor Name"
+    ::= { chassisCPUs 1 }
+
+cpuTemp OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Processor temperature"
+    ::= { chassisCPUs 2 }
+
+cpuStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Processor status"
+    ::= { chassisCPUs 3 }
+
+cpuStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Processor status message"
+    ::= { chassisCPUs 4 }
+
+cpuChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis processor belongs to"
+    ::= { chassisCPUs 5 }
+
+chassisPSTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisPSs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of chassis Power Supplies"
+    ::= { hardwareInfo 4 }
+
+chassisPSs  OBJECT-TYPE
+    SYNTAX        ChassisPSs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Each PS on a chassis"
+    INDEX { psName }
+    ::= { chassisPSTable 1 }
+
+ChassisPSs ::=
+    SEQUENCE {
+        psName    DisplayString,
+        psStatus  DisplayString,
+        psStatusMsg DisplayString,
+        psChassisId  DisplayString
+    }
+
+psName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "PS name"
+    ::= { chassisPSs 1 }
+
+psStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "PS status"
+    ::= { chassisPSs 2 }
+
+psStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status message"
+    ::= { chassisPSs 3 }
+
+psChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis ID PS belongs to"
+    ::= { chassisPSs 4 }
+
+chassisInAirTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisInAirs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table for chassis Intake Air Temperature"
+    ::= { hardwareInfo 5 }
+
+chassisInAirs  OBJECT-TYPE
+    SYNTAX        ChassisInAirs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Intake air temp of a chassis"
+    INDEX { inName }
+    ::= { chassisInAirTable 1 }
+
+ChassisInAirs ::=
+    SEQUENCE {
+        inName    DisplayString,
+        inStatus  DisplayString,
+        inStatusMsg DisplayString,
+        inTemp    INTEGER,
+        inChassisId  DisplayString
+    }
+
+inName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Reading Name"
+    ::= { chassisInAirs 1 }
+
+inTemp OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Temperature"
+    ::= { chassisInAirs 2 }
+
+inStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status"
+    ::= { chassisInAirs 3 }
+
+inStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status message"
+    ::= { chassisInAirs 4 }
+
+inChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis reading belongs to"
+    ::= { chassisInAirs 5 }
+
+chassisExAirTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisExAirs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table for chassis Exhaust Air Temperature"
+    ::= { hardwareInfo 6 }
+
+chassisExAirs  OBJECT-TYPE
+    SYNTAX        ChassisExAirs
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Intake air temp of a chassis"
+    INDEX { exName }
+    ::= { chassisExAirTable 1 }
+
+ChassisExAirs ::=
+    SEQUENCE {
+        exName    DisplayString,
+        exStatus  DisplayString,
+        exStatusMsg DisplayString,
+        exTemp    INTEGER,
+        exChassisId  DisplayString
+    }
+
+exName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Reading name"
+    ::= { chassisExAirs 1 }
+
+exTemp OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Temperature"
+    ::= { chassisExAirs 2 }
+
+exStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status"
+    ::= { chassisExAirs 3 }
+
+exStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status message"
+    ::= { chassisExAirs 4 }
+
+exChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis reading belongs to"
+    ::= { chassisExAirs 5 }
+
+chassisSUCntTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ChassisSUCnts
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table for Storage Unit Controller Temperature"
+    ::= { hardwareInfo 7 }
+
+chassisSUCnts  OBJECT-TYPE
+    SYNTAX        ChassisSUCnts
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Storage Unit Controller Temperature"
+    INDEX { cntrName }
+    ::= { chassisSUCntTable 1 }
+
+ChassisSUCnts ::=
+    SEQUENCE {
+        cntrName    DisplayString,
+        cntrStatus  DisplayString,
+        cntrStatusMsg DisplayString,
+        cntrTemp    INTEGER,
+        cntrChassisId  DisplayString
+    }
+
+cntrName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Reading Name"
+    ::= { chassisSUCnts 1 }
+
+cntrTemp OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Temperature"
+    ::= { chassisSUCnts 2 }
+
+cntrStatus OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status"
+    ::= { chassisSUCnts 3 }
+
+cntrStatusMsg OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Status message"
+    ::= { chassisSUCnts 4 }
+
+cntrChassisId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Chassis reading belongs to"
+    ::= { chassisSUCnts 5 }
+
+platformStorageInfo OBJECT IDENTIFIER ::= { scPlatform 3}
+
+dataSectionModeTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF ModeEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "The RAID mode of the capture array on each SU"
+    ::= { platformStorageInfo 1 }
+
+modeEntry  OBJECT-TYPE
+    SYNTAX        ModeEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "RAID mode of the capture array on each SU"
+    INDEX { dataSectionId }
+    ::= { dataSectionModeTable 1 }
+
+ModeEntry ::=
+    SEQUENCE {
+    dataSectionMode      DisplayString,
+    dataSectionId        DisplayString
+    }
+
+dataSectionMode  OBJECT-TYPE
+    SYNTAX        DisplayString (SIZE (0..255))
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "The RAID mode of the capture array"
+    ::= { modeEntry 2 }
+
+dataSectionId  OBJECT-TYPE
+    SYNTAX        DisplayString (SIZE (0..255))
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "The ID of the data section"
+    ::= { modeEntry 1}
+
+timeConfig OBJECT IDENTIFIER ::= { scPlatform 4}
+
+timeMode OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Mode can be None, NTP or PTP"
+    ::= { timeConfig 1 }
+
+ntpTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF NTPServers
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of NTP server entries"
+    ::= { timeConfig 2 }
+
+ntpServers OBJECT-TYPE
+    SYNTAX        NTPServers
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of a NTP server"
+    INDEX { remotePeer }
+    ::= { ntpTable 1 }
+
+NTPServers ::=
+    SEQUENCE {
+    remotePeer    DisplayString,
+    activeSync     INTEGER,
+    delay         DisplayString,
+    offset     DisplayString,
+    jitter     DisplayString
+    }
+
+remotePeer OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Address of server"
+    ::= { ntpServers 1 }
+
+activeSync OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    false(0),
+                    true(1)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Sync status"
+    ::= { ntpServers 2 }
+
+delay OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Delay"
+    ::= { ntpServers 3 }
+
+offset OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Offset"
+    ::= { ntpServers 4 }
+
+jitter OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Jitter"
+    ::= { ntpServers 5 }
+
+ptpTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF PTPServers
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of PTP server entry"
+    ::= { timeConfig 3 }
+
+ptpServers OBJECT-TYPE
+    SYNTAX        PTPServers
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of a PTP server"
+    INDEX { ptpServer }
+    ::= { ptpTable 1 }
+
+PTPServers ::=
+    SEQUENCE {
+    ptpServer    DisplayString,
+    ptpActiveSync     INTEGER,
+    ptpOffset     DisplayString
+    }
+
+ptpServer OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Address of server"
+    ::= { ptpServers 1 }
+
+ptpActiveSync OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    false(0),
+                    true(1)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Sync status"
+    ::= { ptpServers 2 }
+
+ptpOffset OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Offset"
+    ::= { ptpServers 3 }
+
+END

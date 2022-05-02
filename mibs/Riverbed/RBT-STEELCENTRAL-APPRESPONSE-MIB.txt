@@ -1,0 +1,407 @@
+RBT-STEELCENTRAL-APPRESPONSE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    DisplayString FROM RFC1213-MIB
+    MODULE-IDENTITY, OBJECT-TYPE, Counter32, Gauge32, Counter64,
+    Integer32, TimeTicks, mib-2, enterprises
+    FROM SNMPv2-SMI
+    rbt, productFamilies FROM RBT-MIB
+    steelCentral, scAppResponse FROM RBT-PRODUCT-MIB;
+
+scAppResponseMib MODULE-IDENTITY
+    LAST-UPDATED        "201806150000Z"
+    ORGANIZATION        "Riverbed Technology, Inc."
+    CONTACT-INFO
+    "   Riverbed Technical Support
+           support@riverbed.com"
+    DESCRIPTION         "Riverbed Technology SteelCentral AppResponse MIB"
+
+    REVISION            "201806150000Z"
+    DESCRIPTION         "Initial Revision"
+    ::= { scAppResponse 9999 }
+
+captureJobInfo OBJECT IDENTIFIER ::= { scAppResponse 1 }
+
+jobTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF JobEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of job entries"
+    ::= { captureJobInfo 1 }
+
+jobEntry  OBJECT-TYPE
+    SYNTAX        JobEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of job information"
+    INDEX { jobId }
+    ::= { jobTable 1 }
+
+JobEntry ::=
+    SEQUENCE {
+        jobId                  DisplayString,
+        jobStatus              INTEGER,
+        jobName                DisplayString,
+        jobCaptureFromAllVifgs INTEGER
+    }
+
+jobId OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "ID of the capture job"
+    ::= { jobEntry 1 }
+
+jobStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    done(1),
+                    running(2),
+                    stopped(3),
+                    error(4)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Running state of a capture job. Values: active, running, stopped,
+    unknown"
+    ::= { jobEntry 2 }
+
+jobName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Name of the capture job"
+    ::= { jobEntry 3 }
+
+jobCaptureFromAllVifgs OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    true(1),
+                    false(0)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "If job captures from all VIFGs"
+    ::= { jobEntry 4 }
+
+jobVifgTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF JobVifgIds
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of job vifg ids"
+    ::= { captureJobInfo 2 }
+
+jobVifgIds  OBJECT-TYPE
+    SYNTAX        JobVifgIds
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Job vifg ids"
+    INDEX { jobId }  
+    ::= { jobVifgTable 1 }
+
+JobVifgIds ::=
+    SEQUENCE {
+        jobVifgId    INTEGER
+    }
+
+jobVifgId OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Each VIFG"
+    ::= { jobVifgIds 1 }
+
+
+vifgInfo OBJECT IDENTIFIER ::= { scAppResponse 2}
+
+vifgInfoTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF VifgInfoEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of job entries"
+    ::= { vifgInfo 1 }
+
+vifgInfoEntry  OBJECT-TYPE
+    SYNTAX        VifgInfoEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of job information"
+    INDEX { vifgInfoId }
+    ::= { vifgInfoTable 1 }
+
+VifgInfoEntry ::=
+    SEQUENCE {
+    vifgInfoName              DisplayString,
+    vifgInfoEnabled           INTEGER,
+    vifgInfoId                INTEGER,
+    vifgInfoPktReceived       Counter64,
+    vifgInfoFlowExportEnabled INTEGER
+    }
+
+vifgInfoName OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "VIFG name"
+    ::= { vifgInfoEntry 1 }
+
+vifgInfoEnabled OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "VIFG enabled or disabled"
+    ::= { vifgInfoEntry 2 }
+
+vifgInfoId OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "VIFG ID"
+    ::= { vifgInfoEntry 3 }
+
+
+vifgInfoPktReceived OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Total packet received on VIFG"
+    ::= { vifgInfoEntry 4 }
+
+vifgInfoFlowExportEnabled OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    true(1),
+                    false(0)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Flow export enabled or disabled"
+    ::= { vifgInfoEntry 5 }
+
+
+vifgInfoMemberTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF VifgInfoMemberEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of job entries"
+    ::= { vifgInfo 2 }
+
+vifgInfoMemberEntry  OBJECT-TYPE
+    SYNTAX        VifgInfoMemberEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of job information"
+    INDEX { vifgInfoId }
+    ::= { vifgInfoMemberTable 1 }
+
+VifgInfoMemberEntry ::=
+    SEQUENCE {
+    vifgInfoMemberId    INTEGER
+    }
+
+vifgInfoMemberId OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Each member of VIFG"
+    ::= { vifgInfoMemberEntry 1 }
+
+flowExport OBJECT IDENTIFIER ::= { scAppResponse 3}
+
+flowExportEnabled OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    true(1),
+                    false(0)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Flow export enabled or disabled"
+    ::= { flowExport 1 }
+
+flowExportCollectorTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF FlowExportCollectorEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of Profiler Export entries"
+    ::= { flowExport 2 }
+
+flowExportCollectorEntry  OBJECT-TYPE
+    SYNTAX        FlowExportCollectorEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of Profiler Export information"
+    INDEX { collectorAddress } 
+    ::= { flowExportCollectorTable 1 }
+
+FlowExportCollectorEntry ::=
+    SEQUENCE {
+    collectorAddress    DisplayString,
+    collectorPort       DisplayString,
+    collectorStatus     INTEGER
+    }
+
+collectorAddress OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Collector Address"
+    ::= { flowExportCollectorEntry 1 }
+
+collectorPort OBJECT-TYPE
+    SYNTAX      DisplayString
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Collector Port"
+    ::= { flowExportCollectorEntry 2 }
+
+collectorStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    ok(0),
+                    error(1),
+                    disabled(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Collector Status"
+    ::= { flowExportCollectorEntry 3 }
+
+flowExportProfilerTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF FlowExportProfilerEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of profiler entries"
+    ::= { flowExport 3 }
+
+flowExportProfilerEntry  OBJECT-TYPE
+    SYNTAX        FlowExportProfilerEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of job information"
+    INDEX { profilerAddress }
+    ::= { flowExportProfilerTable 1 }
+
+FlowExportProfilerEntry ::=
+    SEQUENCE {
+    profilerAddress    DisplayString,
+    profilerStatus     INTEGER
+    }
+
+profilerAddress OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Profiler Address"
+    ::= { flowExportProfilerEntry 1 }
+
+profilerStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    ok(0),
+                    error(1),
+                    disabled(2)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Profiler Status"
+    ::= { flowExportProfilerEntry 2 }
+
+storageInfo OBJECT IDENTIFIER ::= { scAppResponse 4 }
+
+systemPriorityMode  OBJECT-TYPE
+    SYNTAX        DisplayString (SIZE (0..255))
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Packet or Metrics priority mode"
+    ::= { storageInfo 1 }
+
+monIfInfo OBJECT IDENTIFIER ::= { scAppResponse 5 }
+
+monIfTable  OBJECT-TYPE
+    SYNTAX        SEQUENCE OF MonIfEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Table of Monitoring Interface entries"
+    ::= { monIfInfo 1 }
+
+monIfEntry  OBJECT-TYPE
+    SYNTAX        MonIfEntry
+    MAX-ACCESS    not-accessible
+    STATUS        current
+    DESCRIPTION
+    "Entry of Monitoring Interface information"
+    INDEX { jobId }
+    ::= { monIfTable 1 }
+
+MonIfEntry ::=
+    SEQUENCE {
+        monIfName       DisplayString,
+        monIfStatus     INTEGER,
+        monIfPktsDrop   Counter64,
+        monIfPktsTotal  Counter64
+    }
+
+monIfName OBJECT-TYPE
+    SYNTAX      DisplayString (SIZE (0..255))
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Monitoring Interface"
+    ::= { monIfEntry 1 }
+
+monIfStatus OBJECT-TYPE
+    SYNTAX      INTEGER {
+                    up(1),
+                    down(2),
+                    missing(3),
+                    disabled(4),
+                    unknown(5)
+                }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Running state of a Monitoring Interface. Values: UP, DOWN, MISSING, DISABLED, UNKNOWN"
+    ::= { monIfEntry 2 }
+
+monIfPktsDrop OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Total packets dropped by Monitoring Interface"
+    ::= { monIfEntry 3 }
+
+monIfPktsTotal OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Total packets received by Monitoring Interface"
+    ::= { monIfEntry 4 }
+
+END

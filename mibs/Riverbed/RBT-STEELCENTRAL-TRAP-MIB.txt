@@ -1,0 +1,408 @@
+--
+-- Riverbed SteelCentral Generic MIB (NPM platform)
+-- Copyright 2017 Riverbed Technology. All rights reserved.
+--
+
+RBT-STEELCENTRAL-TRAP-MIB DEFINITIONS ::= BEGIN
+
+
+    IMPORTS
+    OBJECT-TYPE, NOTIFICATION-TYPE, MODULE-IDENTITY, Unsigned32,
+    enterprises, IpAddress, Integer32
+        FROM SNMPv2-SMI
+    DisplayString, DateAndTime
+        FROM SNMPv2-TC
+    OBJECT-GROUP
+        FROM SNMPv2-CONF
+    InetAddress, InetAddressType
+        FROM INET-ADDRESS-MIB
+    products, rbtTrap, rbtTrapInfo
+	FROM RBT-MIB;
+--
+-- Riverbed SteelCentral Trap 
+--
+
+
+steelcentralTrapModule MODULE-IDENTITY
+    LAST-UPDATED "201907110000Z"
+    ORGANIZATION "Riverbed Technology"
+    CONTACT-INFO "
+    Riverbed Technology
+	  680 Folsom St
+    San Francisco, CA 94107
+
+	+1-415-247-7381
+    email:  support@riverbed.com
+    "
+    DESCRIPTION "Riverbed SteelCentral Product"
+
+    REVISION    "201907160000Z"
+    DESCRIPTION "Added auditIdentifier"
+    REVISION    "201907011000Z"
+    DESCRIPTION "Added auditTrap"
+    REVISION    "201907010000Z"
+    DESCRIPTION "Changed description of hardwareExpireTrap to be more readable"
+    REVISION    "201904080000Z"
+    DESCRIPTION "Added alertPreviousSeverity and alertPreviousSeverityLevel"
+    REVISION    "201810030000Z"
+    DESCRIPTION "Added alertViolators field to policyTrap"
+    REVISION	"201804200000Z"
+    DESCRIPTION	"Added alertUpdate field to policyTrap and hardwareTrap"
+    REVISION	"201604300000Z"
+    DESCRIPTION	"Initial development"
+
+    ::= { rbtTrap 1 }                       
+
+steelcentralTraps OBJECT IDENTIFIER ::= { steelcentralTrapModule 1 }
+steelcentralTrapInfo OBJECT IDENTIFIER ::= { steelcentralTrapModule 2 }
+
+--- Alert object definition
+
+alertSeverity OBJECT-TYPE
+    SYNTAX      INTEGER (0..100)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Severity of the alert"
+    ::= { steelcentralTrapInfo 1 }
+
+alertSeverityLevel OBJECT-TYPE
+    SYNTAX      INTEGER { none(0), minor(1), major(2), critical(3) }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Severity Level from 0 to 3: 0 is No alert, 1 is Minor, 2 is Major, 3 is Critical"
+    ::= { steelcentralTrapInfo 2 }
+
+alertPolicyName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Name of the policy generating the alert"
+    ::= { steelcentralTrapInfo 3 }
+
+alertPolicyDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Description of the policy generating the alert"
+    ::= { steelcentralTrapInfo 4 }
+
+alertPolicyID OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Appliance Policy identifier for the policy generating the alert"
+    ::= {steelcentralTrapInfo 5 }
+
+alertPolicyType OBJECT-TYPE
+    SYNTAX      INTEGER { traffic(1), system(2), watch(3), pcap(4), autobaseline(5), builtin(6) }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Type of the policy generating the alert"
+    ::= { steelcentralTrapInfo 6 }
+
+alertPolicyEvalPeriod OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Evaluation period (in seconds) of the policy generating the alert"
+    ::= { steelcentralTrapInfo 7 }
+    
+alertID OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Appliance ID number for the alert"
+    ::= { steelcentralTrapInfo 8 }
+
+alertStart OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Time alert started, in epoch time"
+    ::= { steelcentralTrapInfo 9 }
+
+alertURL OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "URL to access the alert report on the device"
+    ::= { steelcentralTrapInfo 10 }
+
+alertInfoURL OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "URL to access related information"
+    ::= { steelcentralTrapInfo 11 }
+
+alertMessage OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Description of the problem"
+    ::= { steelcentralTrapInfo 12 }
+
+alertUpdate OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Time of this update to the alert, in epoch time"
+    ::= { steelcentralTrapInfo 13 }
+
+alertViolators OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Comma separated list of path-qualified entities that triggered the alert"
+    ::= { steelcentralTrapInfo 14 }
+
+alertPreviousSeverity OBJECT-TYPE
+    SYNTAX      INTEGER (0..100)
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Previous Severity of the alert"
+    ::= { steelcentralTrapInfo 15 }
+
+alertPreviousSeverityLevel OBJECT-TYPE
+    SYNTAX      INTEGER { none(0), minor(1), major(2), critical(3) }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Previous Severity Level from 0 to 3: 0 is No alert, 1 is Minor, 2 is Major, 3 is Critical"
+    ::= { steelcentralTrapInfo 16 }
+
+--- Audit object definition
+auditTimestamp OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Time at which the event occurred, in epoch time"
+    ::= { steelcentralTrapInfo 17 }
+
+auditAction OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Action type for the event (create, update, etc)"
+    ::= { steelcentralTrapInfo 18 }
+
+auditEventType OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Event type (authentication, configuration, etc)"
+    ::= { steelcentralTrapInfo 19 }
+
+auditUID OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Numeric ID of user that triggered the event"
+    ::= { steelcentralTrapInfo 20 }
+
+auditUsername OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Username of user that triggered the event"
+    ::= { steelcentralTrapInfo 21 }
+
+auditIPAddr OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Originating IP address for the event"
+    ::= { steelcentralTrapInfo 22 }
+
+auditUserAgent OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Client-set user agent string"
+    ::= { steelcentralTrapInfo 23 }
+
+auditPID OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Process ID from which the event originated"
+    ::= { steelcentralTrapInfo 24 }
+
+auditSID OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Session ID of the logged in user"
+    ::= { steelcentralTrapInfo 25 }
+
+auditModule OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "For multi-blade systems, the IP of the module on which the event occurred"
+    ::= { steelcentralTrapInfo 26 }
+
+auditSuccess OBJECT-TYPE
+    SYNTAX      INTEGER { false(0), true(1) }
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Whether the action was successful (0 for false, 1 for true)"
+    ::= { steelcentralTrapInfo 27 }
+
+auditRESTLink OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "For REST-based events, the originating link (create, list, etc)"
+    ::= { steelcentralTrapInfo 28 }
+
+auditRESTNamespace OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "For REST-based events, the originating namespace"
+    ::= { steelcentralTrapInfo 29 }
+
+auditRESTVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "For REST-based events, the originating namespace's API version"
+    ::= { steelcentralTrapInfo 30 }
+
+auditRESTResource OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "For REST-based events, the resource within the originating namespace"
+    ::= { steelcentralTrapInfo 31 }
+
+auditDetails OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "List of specific details about the event"
+    ::= { steelcentralTrapInfo 32 }
+
+auditCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Number of times the event occurred within the same minute"
+    ::= { steelcentralTrapInfo 33 }
+
+auditIdentifier OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  accessible-for-notify
+    STATUS      current
+    DESCRIPTION "Event unique human-readable identifier (e.g., hostgroup name for a hostgroup event)"
+    ::= { steelcentralTrapInfo 34 }
+
+-- Traps
+
+testTrap NOTIFICATION-TYPE
+    STATUS      current
+    DESCRIPTION "SteelCentral test trap"
+    ::= { steelcentralTraps 1 }
+
+policyTrap NOTIFICATION-TYPE
+    OBJECTS {
+        alertSeverity,
+        alertSeverityLevel,
+        alertPolicyName,
+        alertPolicyDescription,
+        alertPolicyID,
+        alertPolicyType,
+        alertPolicyEvalPeriod,
+        alertID,
+        alertStart,
+        alertUpdate,
+        alertViolators,
+        alertPreviousSeverity,
+        alertPreviousSeverityLevel,
+        alertURL 
+    }
+    STATUS      current
+    DESCRIPTION "Traffic violated policy thresholds"
+    ::= { steelcentralTraps 2 }
+
+hardwareTrap NOTIFICATION-TYPE
+    OBJECTS {
+        alertSeverity,
+        alertSeverityLevel,
+        alertPolicyName,
+        alertPolicyDescription,
+        alertPolicyID,
+        alertPolicyType,
+        alertPolicyEvalPeriod,
+        alertID,
+        alertStart,
+        alertUpdate,
+        alertURL,
+        alertInfoURL,
+        alertMessage
+    }
+    STATUS      current
+    DESCRIPTION "Hardware problem detected"
+    ::= { steelcentralTraps 3 }
+
+policyExpireTrap NOTIFICATION-TYPE
+    OBJECTS {
+        alertPolicyName,
+        alertPolicyDescription,
+        alertPolicyID,
+        alertPolicyType,
+        alertPolicyEvalPeriod,
+        alertID,
+        alertStart,
+        alertUpdate,
+        alertViolators,
+        alertURL 
+    }
+    STATUS      current
+    DESCRIPTION "Traffic no longer violating policy thresholds"
+    ::= { steelcentralTraps 4 }
+
+hardwareExpireTrap NOTIFICATION-TYPE
+    OBJECTS {
+        alertPolicyName,
+        alertPolicyDescription,
+        alertPolicyID,
+        alertPolicyType,
+        alertPolicyEvalPeriod,
+        alertID,
+        alertStart,
+        alertUpdate,
+        alertURL,
+        alertInfoURL,
+        alertMessage
+    }
+    STATUS      current
+    DESCRIPTION "Hardware problem no longer detected"
+    ::= { steelcentralTraps 5 }
+
+auditTrap NOTIFICATION-TYPE
+    OBJECTS {
+        auditTimestamp
+        auditAction
+        auditEventType
+        auditUID
+        auditUsername
+        auditIPAddr
+        auditUserAgent
+        auditPID
+        auditSID
+        auditModule
+        auditSuccess
+        auditRESTLink
+        auditRESTNamespace
+        auditRESTVersion
+        auditRESTResource
+        auditDetails
+        auditCount
+        auditIdentifier
+    }
+    STATUS      current
+    DESCRIPTION "Auditable system event"
+    ::= { steelcentralTraps 6 }
+
+END

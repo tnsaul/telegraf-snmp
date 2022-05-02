@@ -1,0 +1,2047 @@
+MAZU-MIB DEFINITIONS ::= BEGIN
+ 
+IMPORTS
+        MODULE-IDENTITY, OBJECT-TYPE, IpAddress,
+        enterprises, Counter32                   FROM SNMPv2-SMI
+        TRAP-TYPE                                FROM RFC-1215
+        MODULE-COMPLIANCE, OBJECT-GROUP          FROM SNMPv2-CONF;
+
+--
+-- A brief description and update information about this mib.
+--
+mazu MODULE-IDENTITY
+    LAST-UPDATED "201205080000Z"
+    ORGANIZATION "Mazu Networks, Inc."
+    CONTACT-INFO
+         "http://www.mazunetworks.com"
+    DESCRIPTION
+        "This file defines the private MAZU MIB extensions."
+	::= { enterprises 7054 }
+
+--- ======================== GENERIC =======================
+
+echoTrap OBJECT-TYPE
+    SYNTAX      INTEGER { success(0), failure(1) }
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Send a test trap. 0 if success, 1 otherwise."
+    ::= { mazu 1 }
+
+-- ========== Device Info objects ==========
+deviceInfo OBJECT IDENTIFIER ::=          { mazu 2 }
+
+deviceHostName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Appliance host name."
+    ::= { deviceInfo 1 }
+
+deviceSerialNumber OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+      "Appliance serial number."
+    ::= { deviceInfo 2 }
+
+deviceDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Appliance description."
+    ::= { deviceInfo 3 }
+
+deviceFeatures OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Appliance features."
+    ::= { deviceInfo 4 }
+
+deviceModel OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+    "Appliance model."
+    ::= { deviceInfo 5 }
+
+--- =================================================
+--- ====================== PROFILER =================
+--- =================================================
+
+
+profiler OBJECT IDENTIFIER ::=          { mazu 70 }
+
+--- =========== TRAP VARIABLES ================
+
+variable OBJECT IDENTIFIER ::=          { mazu 71 }
+
+eventVariable OBJECT IDENTIFIER ::=     { variable 2 }
+
+severity OBJECT-TYPE
+    SYNTAX      INTEGER (0..100)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Severity of the event"
+    ::= { eventVariable 1 }
+
+description OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Type-specific description of the event"
+    ::= { eventVariable 3 }
+
+eventID OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Profiler's ID number of the event"
+    ::= { eventVariable 4 }
+
+eventURL OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "URL to access the ID on this machine"
+    ::= { eventVariable 5 }
+
+mBladeID OBJECT-TYPE
+    SYNTAX      INTEGER (1..30)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "mBlade ID number"
+    ::= { eventVariable 6 }
+
+
+alertLevel OBJECT-TYPE
+    SYNTAX      INTEGER { low(1), medium(2), high(3) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Value from 1 to 3: 1 is low, 2 is medium, 3 is high"
+    ::= { eventVariable 7 }
+
+
+eventStart OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Time event started, in epoch time"
+    ::= { eventVariable 8 }
+
+-- placeholder range: 9 - 15 are unused
+
+eventSourceCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+
+    STATUS      current
+    DESCRIPTION
+            "Total number of sources in this event"
+    ::= { eventVariable 16 }
+
+EventSourceEntry ::= SEQUENCE {   
+    eventSourceIndex         INTEGER,
+    eventSourceName          OCTET STRING,
+    eventSourceIpaddr        IpAddress
+}
+
+eventSourceTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF EventSourceEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of Sources"
+	     ::= { eventVariable 17 }
+
+eventSourceEntry OBJECT-TYPE
+    SYNTAX      EventSourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of Hosts in table"
+    INDEX      {eventSourceIndex }
+    ::= { eventSourceTable 1 }
+
+eventSourceIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the eventSource"
+    ::= { eventSourceEntry 1 }
+
+eventSourceName  OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of eventSource"
+	    ::= { eventSourceEntry 2 }
+
+eventSourceIpaddr OBJECT-TYPE
+             SYNTAX      IpAddress
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "IP address of eventSource"
+		 ::= { eventSourceEntry 3 }
+
+
+eventDestCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Total number of sources in this event"
+    ::= { eventVariable 18 }
+
+EventDestEntry ::= SEQUENCE {   
+    eventDestIndex         INTEGER,
+    eventDestName          OCTET STRING,
+    eventDestIpaddr        IpAddress
+}
+
+eventDestTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF EventDestEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of Dests"
+	     ::= { eventVariable 19 }
+
+eventDestEntry OBJECT-TYPE
+    SYNTAX      EventDestEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of Hosts in table"
+    INDEX      {eventDestIndex }
+    ::= { eventDestTable 1 }
+
+eventDestIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the eventDest"
+    ::= { eventDestEntry 1 }
+
+eventDestName  OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of eventDest"
+	    ::= { eventDestEntry 2 }
+
+eventDestIpaddr OBJECT-TYPE
+             SYNTAX      IpAddress
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "IP address of eventDest"
+		 ::= { eventDestEntry 3 }
+
+
+eventProtocolCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Total number of Protocols in this event"
+    ::= { eventVariable 20 }
+
+EventProtocolEntry ::= SEQUENCE {   
+    eventProtocolIndex         INTEGER,
+    eventProtocolName          OCTET STRING,
+    eventProtocolId            INTEGER
+}
+
+eventProtocolTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF EventProtocolEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of Protocols"
+	     ::= { eventVariable 21 }
+
+eventProtocolEntry OBJECT-TYPE
+    SYNTAX      EventProtocolEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of Protocols in table"
+    INDEX      {eventProtocolIndex }
+    ::= { eventProtocolTable 1 }
+
+eventProtocolIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the eventProtocol"
+    ::= { eventProtocolEntry 1 }
+
+eventProtocolName  OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of eventProtocol"
+	    ::= { eventProtocolEntry 2 }
+
+eventProtocolId OBJECT-TYPE
+             SYNTAX      INTEGER
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "Numeric ID of eventProtocol"
+		 ::= { eventProtocolEntry 3 }
+
+eventServiceCount OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Total number of Services in this event"
+    ::= { eventVariable 22 }
+
+EventServiceEntry ::= SEQUENCE {   
+    eventServiceIndex         INTEGER,
+    eventServiceName          OCTET STRING,
+    eventServiceProto         INTEGER,
+    eventServicePort          INTEGER
+}
+
+eventServiceTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF EventServiceEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of Services"
+	     ::= { eventVariable 23 }
+
+eventServiceEntry OBJECT-TYPE
+    SYNTAX      EventServiceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of Services"
+    INDEX      {eventServiceIndex }
+    ::= { eventServiceTable 1 }
+
+eventServiceIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the eventService"
+    ::= { eventServiceEntry 1 }
+
+eventServiceName  OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of eventService"
+	    ::= { eventServiceEntry 2 }
+
+eventServiceProto OBJECT-TYPE
+             SYNTAX      INTEGER
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "Numeric ID of protocol in eventService"
+		 ::= { eventServiceEntry 3 }
+
+eventServicePort OBJECT-TYPE
+             SYNTAX      INTEGER
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "Numeric ID of port in eventService"
+		 ::= { eventServiceEntry 4 }
+
+
+-- placeholder range: 24 - 30 are unused
+
+eventNormalBPS OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Normal number of bytes per second"
+    ::= { eventVariable 31 }
+
+eventCurrentBPS OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Current number of bytes per second"
+    ::= { eventVariable 32 }
+
+eventNormalPPS OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Normal number of packets per second"
+    ::= { eventVariable 33 }
+
+eventCurrentPPS OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Current number of packets per second"
+    ::= { eventVariable 34 }
+
+eventNormalConns OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Normal number of connections"
+    ::= { eventVariable 35 }
+
+eventCurrentConns OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Current number of connections"
+    ::= { eventVariable 36 }
+
+-- placeholder range: 37 - 40 are unused
+
+hostOrGroup OBJECT IDENTIFIER ::=          { eventVariable 41 }
+
+hostOrGroupSwitch OBJECT-TYPE
+    SYNTAX      INTEGER { host(1), group(2) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "1 if host is relevant, 2 if group is relevant"
+    ::= { hostOrGroup 1 }
+
+hostOrGroupHostName  OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION  "Name of host"
+	::= { hostOrGroup 2 }
+    
+hostOrGroupHostIpaddr  OBJECT-TYPE
+    SYNTAX      IpAddress
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION  "IP Address of host"
+	::= { hostOrGroup 3 }
+    
+hostOrGroupGroupType  OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION  "Numeric ID of group type"
+	::= { hostOrGroup 4 }
+    
+hostOrGroupGroupId  OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION  "Numeric ID of group"
+	::= { hostOrGroup 5 }
+
+eventRuleName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Name of violated rule"
+    ::= { eventVariable 42 }
+
+eventRuleDescription OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Description of violated rule"
+    ::= { eventVariable 43 }
+
+eventQuietDuration OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Length of quietness of host, in seconds"
+    ::= { eventVariable 44 }
+
+eventUpperLowerBound OBJECT-TYPE
+    SYNTAX      INTEGER { upper(1), lower(2) }
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "1 if threshold was upper bound, 2 if lower bound"
+    ::= { eventVariable 45 }
+
+eventThresholdValue OBJECT-TYPE
+    SYNTAX      INTEGER
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Scalar of exceeded threshold"
+    ::= { eventVariable 46 }
+
+eventThresholdUnits OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Units of exceeded threshold"
+    ::= { eventVariable 47 }
+
+
+--- ======================== MONITOR =======================
+
+MBladeEntry ::= SEQUENCE {   
+        mBladeIndex         INTEGER,
+	mBladeName          OCTET STRING,
+        mBladeIpaddr        IpAddress,
+	mBladeFreeDisk      INTEGER,         -- *
+	mBladeUptime        INTEGER,
+	mBladeLoadAverage   OCTET STRING,
+	mBladeCpu1Load      INTEGER,         -- *
+	mBladeCpu2Load      INTEGER,         -- *
+	mBladeFreeMem       INTEGER,         -- *
+        mBladeCapacityPercent INTEGER, -- 10
+	mBladeRunsDispatcher INTEGER, 
+	mBladeStatusDispatcher INTEGER,
+	mBladeRunsAnalyzer  INTEGER,
+	mBladeStatusAnalyzer  INTEGER, -- 14
+	mBladeRunsEventManager INTEGER,
+	mBladeStatusEventManager INTEGER,
+	mBladeRunsUserInterface INTEGER,
+	mBladeStatusUserInterface INTEGER, -- 18
+	mBladeRunsDatabase INTEGER,
+	mBladeStatusDatabase INTEGER,  -- 20
+	mBladeAutoGroupingRunning  INTEGER
+}
+
+mBladeTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF MBladeEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of MBlades"
+	     ::= { profiler 4 }
+
+mBladeEntry OBJECT-TYPE
+    SYNTAX      MBladeEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of mBlades"
+    INDEX      { mBladeIndex }
+    ::= { mBladeTable 1 }
+
+
+
+mBladeIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the mBlade"
+    ::= { mBladeEntry 1 }
+
+mBladeName    OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of mBlade"
+	    ::= { mBladeEntry 2 }
+
+mBladeIpaddr OBJECT-TYPE
+             SYNTAX      IpAddress
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "IP address of mBlade"
+		 ::= { mBladeEntry 3 }
+
+mBladeFreeDisk    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "free space on root partition of mBlade, in MB"
+	    ::=       { mBladeEntry 4 }
+
+
+mBladeUptime      OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "time since reboot of mBlade, in seconds"
+	    ::=       { mBladeEntry 5 }
+
+mBladeLoadAverage OBJECT-TYPE
+	    SYNTAX OCTET STRING
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "loadaverage of mBlade"
+	    ::=       { mBladeEntry 6 }
+
+mBladeCpu1Load    OBJECT-TYPE
+	    SYNTAX INTEGER (0..100)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "percentage of CPU 1 of mBlade that isn't idle"
+	    ::=       { mBladeEntry 7 }
+
+mBladeCpu2Load    OBJECT-TYPE
+	    SYNTAX INTEGER (0..100)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "percentage of CPU 2 of mBlade that isn't idle"
+	    ::=       { mBladeEntry 8 }
+
+mBladeFreeMem     OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Free physical memory of mBlade, in KB"
+	    ::= { mBladeEntry 9 }
+
+mBladeCapacityPercent   OBJECT-TYPE
+	    SYNTAX      INTEGER (0..100)
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "percentage of capacity before sampling kicks in"
+	    ::= { mBladeEntry 10 }
+
+mBladeRunsDispatcher   OBJECT-TYPE
+	    SYNTAX      INTEGER { other(0), dispatcher(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if this mBlade is a Dispatcher, 0 otherwise"
+	    ::= { mBladeEntry 11 }
+
+mBladeStatusDispatcher   OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if Dispatcher is running, 0 otherwise"
+	    ::= { mBladeEntry 12 }
+
+mBladeRunsAnalyzer   OBJECT-TYPE
+	    SYNTAX      INTEGER { other(0), analyzer(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if this mBlade is a Analyzer, 0 otherwise"
+	    ::= { mBladeEntry 13 }
+
+mBladeStatusAnalyzer   OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if Analyzer is running, 0 otherwise"
+	    ::= { mBladeEntry 14 }
+
+mBladeRunsEventManager   OBJECT-TYPE
+	    SYNTAX      INTEGER { other(0), eventmanager(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if this mBlade is a EventManager, 0 otherwise"
+	    ::= { mBladeEntry 15 }
+
+mBladeStatusEventManager   OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if EventManager is running, 0 otherwise"
+	    ::= { mBladeEntry 16 }
+
+mBladeRunsUserInterface   OBJECT-TYPE
+	    SYNTAX      INTEGER { other(0), userinterface(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if this mBlade is a UserInterface, 0 otherwise"
+	    ::= { mBladeEntry 17 }
+
+mBladeStatusUserInterface   OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if UserInterface is running, 0 otherwise"
+	    ::= { mBladeEntry 18 }
+
+mBladeRunsDatabase   OBJECT-TYPE
+	    SYNTAX      INTEGER { other(0), database(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if this mBlade is a Database, 0 otherwise"
+	    ::= { mBladeEntry 19 }
+
+mBladeStatusDatabase   OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if Database is running, 0 otherwise"
+	    ::= { mBladeEntry 20 }
+
+mBladeAutoGroupingRunning    OBJECT-TYPE
+	    SYNTAX      INTEGER { notrunning(0), running(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "1 if autogrouping is running, 0 otherwise"
+	    ::= { mBladeEntry 21 }
+
+
+
+DiskResourceEntry ::= SEQUENCE {   
+        diskIndex INTEGER,
+        diskUsed INTEGER,
+	diskTotal INTEGER,
+	diskPercentFree INTEGER
+}
+
+
+diskResourceTable OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF DiskResourceEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "Disk resources on each mBlade"
+	     ::= { profiler 10 }
+
+diskResourceEntry OBJECT-TYPE
+    SYNTAX      DiskResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of mBlades"
+    INDEX      { diskIndex }
+    ::= { diskResourceTable 1 }
+
+diskIndex    OBJECT-TYPE
+	    SYNTAX INTEGER (1..10)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Disk index"
+	    ::=       { diskResourceEntry 1 }
+
+diskUsed    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Disk space used"
+	    ::=       { diskResourceEntry 2 }
+
+diskTotal OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Total disk space"
+	    ::=       { diskResourceEntry 3 }
+
+diskPercentFree OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Percent of disk space free"
+	    ::=       { diskResourceEntry 4 }
+
+
+MemoryResourceEntry ::= SEQUENCE {   
+        memoryIndex INTEGER,
+        memoryUsed INTEGER,
+	memoryTotal INTEGER,
+	memoryPercentFree INTEGER
+}
+
+
+memoryResourceTable OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF MemoryResourceEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "Memory resources on each mBlade"
+	     ::= { profiler 12 }
+
+memoryResourceEntry OBJECT-TYPE
+    SYNTAX      MemoryResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of mBlades"
+    INDEX      { memoryIndex }
+    ::= { memoryResourceTable 1 }
+
+memoryIndex    OBJECT-TYPE
+	    SYNTAX INTEGER (1..10)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Memory index"
+	    ::=       { memoryResourceEntry 1 }
+
+memoryUsed    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Memory space used"
+	    ::=       { memoryResourceEntry 2 }
+
+memoryTotal OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Total memory space"
+	    ::=       { memoryResourceEntry 3 }
+
+memoryPercentFree OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Percent of memory space free"
+	    ::=       { memoryResourceEntry 4 }
+
+
+CpuResourceEntry ::= SEQUENCE {
+        cpuIndex INTEGER,
+        cpuOnePercentFree INTEGER,
+        cpuTwoPercentFree INTEGER,
+        cpuThreePercentFree INTEGER,
+        cpuFourPercentFree INTEGER
+}
+
+
+cpuResourceTable OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF CpuResourceEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "Cpu resources on each mBlade"
+	     ::= { profiler 14 }
+
+cpuResourceEntry OBJECT-TYPE
+    SYNTAX      CpuResourceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of mBlades"
+    INDEX      { cpuIndex }
+    ::= { cpuResourceTable 1 }
+
+cpuIndex    OBJECT-TYPE
+	    SYNTAX INTEGER (1..10)
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Cpu index"
+	    ::=       { cpuResourceEntry 1 }
+
+cpuOnePercentFree    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Cpu space used"
+	    ::=       { cpuResourceEntry 2 }
+
+cpuTwoPercentFree    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Cpu space used"
+	    ::=       { cpuResourceEntry 3 }
+
+cpuThreePercentFree    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Cpu space used"
+	    ::=       { cpuResourceEntry 4 }
+
+cpuFourPercentFree    OBJECT-TYPE
+	    SYNTAX INTEGER
+	    MAX-ACCESS read-only
+	    STATUS current
+	    DESCRIPTION "Cpu space used"
+	    ::=       { cpuResourceEntry 5 }
+
+
+--- ===================== TRAPS =====================
+
+eventDDoSLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalBPS,
+	eventCurrentBPS,
+	eventNormalPPS,
+	eventCurrentPPS }
+    DESCRIPTION
+        "Denial of service, low severity"
+    ::= 11
+
+eventDDoSMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalBPS,
+	eventCurrentBPS,
+	eventNormalPPS,
+	eventCurrentPPS }
+    DESCRIPTION
+        "Denial of service, medium severity"
+    ::= 12
+
+eventDDoSHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalBPS,
+	eventCurrentBPS,
+	eventNormalPPS,
+	eventCurrentPPS }
+    DESCRIPTION
+        "Denial of service, high severity"
+    ::= 13
+
+
+eventWormLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Worm, low severity"
+    ::= 15
+
+eventWormMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Worm, medium severity"
+    ::= 16
+
+eventWormHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Worm, high severity"
+    ::= 17
+
+eventHostScanLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Host (ping) scan, low severity"
+    ::= 19
+
+eventHostScanMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Host (ping) scan, medium severity"
+    ::= 20
+
+eventHostScanHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Host (ping) scan, high severity"
+    ::= 21
+
+eventPortScanLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Port scan, low severity"
+    ::= 23
+
+eventPortScanMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Port scan, medium severity"
+    ::= 24
+
+eventPortScanHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Port scan, high severity"
+    ::= 25
+
+eventSuspiciousConnLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalConns,
+	eventCurrentConns }
+    DESCRIPTION
+        "Suspicious connection, low severity"
+    ::= 27
+
+eventSuspiciousConnMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalConns,
+	eventCurrentConns }
+    DESCRIPTION
+        "Suspicious connection, medium severity"
+    ::= 28
+
+eventSuspiciousConnHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventNormalConns,
+	eventCurrentConns }
+    DESCRIPTION
+        "Suspicious connection, high severity"
+    ::= 29
+
+eventNewHostLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "New host, low severity"
+    ::= 31
+
+eventNewHostMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "New host, medium severity"
+    ::= 32
+
+eventNewHostHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "New host, high severity"
+    ::= 33
+
+eventNewServiceLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	hostOrGroupSwitch,
+	hostOrGroupHostName,
+	hostOrGroupHostIpaddr,
+	hostOrGroupGroupType,
+	hostOrGroupGroupId }
+    DESCRIPTION
+        "New service, low severity"
+    ::= 47
+
+eventNewServiceMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	hostOrGroupSwitch,
+	hostOrGroupHostName,
+	hostOrGroupHostIpaddr,
+	hostOrGroupGroupType,
+	hostOrGroupGroupId }
+    DESCRIPTION
+        "New service, medium severity"
+    ::= 48
+
+eventNewServiceHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	hostOrGroupSwitch,
+	hostOrGroupHostName,
+	hostOrGroupHostIpaddr,
+	hostOrGroupGroupType,
+	hostOrGroupGroupId }
+    DESCRIPTION
+        "New service, high severity"
+    ::= 49
+
+eventAlertRuleLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription,
+	eventUpperLowerBound,
+	eventThresholdValue,
+	eventThresholdUnits }
+    DESCRIPTION
+        "Alert rule, low severity"
+    ::= 55
+
+eventAlertRuleMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription,
+	eventUpperLowerBound,
+	eventThresholdValue,
+	eventThresholdUnits }
+    DESCRIPTION
+        "Alert rule, medium severity"
+    ::= 56
+
+eventAlertRuleHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription,
+	eventUpperLowerBound,
+	eventThresholdValue,
+	eventThresholdUnits }
+    DESCRIPTION
+        "Alert rule, high severity"
+    ::= 57
+
+eventSensorProblemHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Sensor problem (always high severity)"
+    ::= 65
+
+eventAnalyticsApplicationAvailabilityLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application availability, low severity"
+    ::= 79
+
+eventAnalyticsApplicationAvailabilityMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application availability, medium severity"
+    ::= 80
+
+eventAnalyticsApplicationAvailabilityHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application availability, high severity"
+    ::= 81
+
+eventAnalyticsNetworkLinkCongestionLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link congestion, low severity"
+    ::= 83
+
+eventAnalyticsNetworkLinkCongestionMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link congestion, medium severity"
+    ::= 84
+
+eventAnalyticsNetworkLinkCongestionHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link congestion, high severity"
+    ::= 85
+
+eventAnalyticsNetworkLinkOutageLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link outage, low severity"
+    ::= 87
+
+eventAnalyticsNetworkLinkOutageMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link outage, medium severity"
+    ::= 88
+
+eventAnalyticsNetworkLinkOutageHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: network link outage, high severity"
+    ::= 89
+
+eventAnalyticsApplicationPerformanceLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application performance, low severity"
+    ::= 91
+
+eventAnalyticsApplicationPerformanceMedium TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application performance, medium severity"
+    ::= 92
+
+eventAnalyticsApplicationPerformanceHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: application performance, high severity"
+    ::= 93
+
+eventAnalyticsServicePolicyLow TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: service policy, low severity"
+    ::= 95
+
+eventAnalyticsServicePolicyHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable,
+	eventRuleName,
+	eventRuleDescription }
+    DESCRIPTION
+        "Analytics: service policy, high severity"
+    ::= 97
+
+eventTestTrap TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        unknown }
+    DESCRIPTION
+        "Trap for testing of trap settings"
+    ::= 99
+
+eventStorageProblemHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Storage problem (always high severity)"
+    ::= 105
+
+eventModuleProblemHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Module problem (always high severity)"
+    ::= 106
+
+eventHardwareProblemHigh TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        severity,
+        description,
+        eventID,
+        eventURL,
+        alertLevel,
+        eventStart,
+        eventSourceCount,
+        eventSourceTable,
+        eventDestCount,
+        eventDestTable,
+        eventProtocolCount,
+        eventProtocolTable,
+        eventServiceCount,
+        eventServiceTable }
+    DESCRIPTION
+        "Hardware problem (always high severity)"
+    ::= 107
+
+--- ============ BLADE DOWN TRAP ======== ---------
+
+mBladeException TRAP-TYPE
+    ENTERPRISE profiler
+    VARIABLES {
+        mBladeTable }
+    DESCRIPTION
+        "Blade not functioning properly; please contact customer support at Mazu Networks"
+    ::= 101
+
+
+--- === SENSOR TABLE ===
+
+SensorEntry ::= SEQUENCE {   
+        sensorIndex         INTEGER,
+	sensorName          OCTET STRING,
+        sensorIpaddr        IpAddress,
+	sensorStatus        INTEGER
+}	
+
+sensorTable  OBJECT-TYPE
+	     SYNTAX      SEQUENCE OF SensorEntry
+	     MAX-ACCESS  not-accessible
+	     STATUS      current
+	     DESCRIPTION "List of Sensors"
+	     ::= { profiler 5 }
+
+sensorEntry OBJECT-TYPE
+    SYNTAX      SensorEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of sensors"
+    INDEX      { sensorIndex }
+    ::= { sensorTable 1 }
+
+
+sensorIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..10)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the sensor"
+    ::= { sensorEntry 1 }
+
+sensorName    OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Name of sensor"
+	    ::= { sensorEntry 2 }
+
+sensorIpaddr OBJECT-TYPE
+             SYNTAX      IpAddress
+	     MAX-ACCESS  read-only
+	     STATUS      current
+	     DESCRIPTION  "IP address of sensor"
+		 ::= { sensorEntry 3 }
+
+sensorStatus  OBJECT-TYPE
+            SYNTAX      INTEGER { down(0), up(1) }
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "1 if sensor is up, 0 if sensor is down"
+	    ::= { sensorEntry 4 }
+
+
+
+
+profilerTraffic OBJECT IDENTIFIER ::=          { profiler 3 }
+bytes   OBJECT IDENTIFIER ::=          { profilerTraffic 1 }
+
+bytesTotal       OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current total bytes per second"
+	    ::= { bytes 1 }
+
+bytesTcp         OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current TCP bytes per second"
+	    ::= { bytes 2 }
+
+bytesUdp         OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current UDP bytes per second"
+	    ::= { bytes 3 }
+
+bytesIcmp        OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current ICMP bytes per second"
+	    ::= { bytes 4 }
+
+bytesOther       OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current other bytes per second"
+	    ::= { bytes 5 }
+
+packets OBJECT IDENTIFIER ::=          { profilerTraffic 2 }
+
+packetsTotal       OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current total packets per second"
+	    ::= { packets 1 }
+
+packetsTcp         OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current TCP packets per second"
+	    ::= { packets 2 }
+
+packetsUdp         OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current UDP packets per second"
+	    ::= { packets 3 }
+
+packetsIcmp        OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current ICMP packets per second"
+	    ::= { packets 4 }
+
+packetsOther       OBJECT-TYPE
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Current other packets per second"
+	    ::= { packets 5 }
+
+--- === HOST TABLE === 
+
+HostEntry ::= SEQUENCE {
+        hostIndex         INTEGER,
+        hostName          OCTET STRING,
+        hostIpaddr        IpAddress,
+        hostPackets       INTEGER,
+	hostBytes         INTEGER
+    }
+
+hostTable  OBJECT-TYPE
+	    SYNTAX      SEQUENCE OF HostEntry
+	    MAX-ACCESS  not-accessible
+	    STATUS      current
+	    DESCRIPTION "List of Top Hosts"
+	    ::= { profilerTraffic 3 }
+
+hostEntry OBJECT-TYPE
+    SYNTAX      HostEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Number of Top Hosts"
+    INDEX      { hostIndex }
+    ::= { hostTable 1 }
+
+
+hostIndex OBJECT-TYPE
+    SYNTAX      INTEGER (1..50)
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Index of the top host"
+    ::= { hostEntry 1 }
+
+hostName    OBJECT-TYPE
+            SYNTAX      OCTET STRING
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Hostname as resolved by DNS"
+	    ::= { hostEntry 2 }
+
+hostIpaddr  OBJECT-TYPE
+            SYNTAX      IpAddress
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "IP address of host"
+	    ::= { hostEntry 3 }
+
+hostPackets OBJECT-TYPE
+            SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Packets per second from the host"
+	    ::= { hostEntry 4 }
+
+hostBytes   OBJECT-TYPE
+            SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION  "Bytes per second from the host"
+	    ::= { hostEntry 5 }
+
+
+END
+
+

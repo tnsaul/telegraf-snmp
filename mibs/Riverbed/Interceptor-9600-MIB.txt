@@ -1,0 +1,1047 @@
+INTERCEPTOR-MIB DEFINITIONS ::= BEGIN 
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32,
+                 TimeTicks FROM SNMPv2-SMI
+    DateAndTime FROM SNMPv2-TC
+    products FROM RBT-MIB;
+
+interceptor MODULE-IDENTITY
+        LAST-UPDATED        "201502090000Z"
+        ORGANIZATION        "Riverbed Technology, Inc."
+        CONTACT-INFO
+        "  Riverbed Technical Support
+           support@riverbed.com"
+        DESCRIPTION         "Added Interface Statistics"
+        REVISION            "201507170000Z"
+        DESCRIPTION         "Added Suspected Scanner traps"
+        REVISION            "201412050000Z"
+        DESCRIPTION         "Added Admission Service traps"
+        REVISION            "201402200000Z"
+        DESCRIPTION         "Added LinkDuplex and linkIo traps"
+        REVISION            "201402060000Z"
+        DESCRIPTION         "Added test trap"
+        REVISION            "201309300000Z"
+        DESCRIPTION         "Added instance error traps"
+        REVISION            "201305300000Z"
+        DESCRIPTION         "Added various license error traps"
+        REVISION            "201305150000Z"
+        DESCRIPTION         "Added Xbridge traps"
+        REVISION            "201302050000Z"
+        DESCRIPTION         "Added all link propagation traps"
+        REVISION            "201212280000Z"
+        DESCRIPTION         "Added load balance service traps"
+        REVISION            "201212110000Z"
+        DESCRIPTION         "Added separate version incompatible traps
+                             for SteelHead and SteelHead Interceptor"
+        REVISION            "201210040000Z"
+        DESCRIPTION         "Added version incompatible traps"
+        REVISION            "201208150000Z"
+        DESCRIPTION         "Riverbed Technology STEELHEAD INTERCEPTOR MIB"
+        REVISION            "201208070000Z"
+        DESCRIPTION         "Updated the neighbor table to handle neighbors
+                             across multiple instances"
+        REVISION            "201208020000Z"
+        DESCRIPTION         "Added instance name object to instance specific traps"
+        REVISION            "201011160000Z"
+        DESCRIPTION         "Added raid traps"
+        REVISION            "201007010000Z"
+        DESCRIPTION         "Riverbed SteelHead Interceptor 3.0 MIB"
+        REVISION            "201005210000Z"
+        DESCRIPTION         "Riverbed SteelHead Interceptor 2.0 MIB"
+        REVISION            "200910230000Z"
+        DESCRIPTION         "Added temperature traps"
+        REVISION            "200909230000Z"
+        DESCRIPTION         "Updated contact information"
+        REVISION            "200809160000Z"
+        DESCRIPTION         "Riverbed SteelHead Interceptor 1.1 Revisions"
+        REVISION            "200602030000Z"
+        DESCRIPTION         "Riverbed SteelHead Interceptor 1.0 MIB"
+        ::= { products 3 }
+
+system OBJECT IDENTIFIER
+    ::= { interceptor 1 }
+
+status OBJECT IDENTIFIER
+    ::= { interceptor 2 }
+
+config OBJECT IDENTIFIER
+    ::= { interceptor 3 }
+
+alarms OBJECT IDENTIFIER
+    ::= { interceptor 4 }
+
+statistics OBJECT IDENTIFIER
+    ::= { interceptor 5 }
+
+test OBJECT IDENTIFIER
+    ::= { interceptor 6 }
+
+--
+--
+-- SYSTEM
+--
+--
+
+model OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Appliance model"
+    ::= { system 1 }
+
+serialNumber OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Appliance serial number"
+    ::= { system 2 }
+
+systemVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System software version string"
+    ::= { system 3 }
+
+--
+--
+-- STATUS
+--
+--
+
+systemClock OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System clock time"
+    ::= { status 1 }
+
+health OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current health"
+    ::= { status 2 }
+
+serviceStatus OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current service status"
+    ::= { status 3 }
+
+serviceUptime OBJECT-TYPE
+    SYNTAX      TimeTicks
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current service uptime"
+    ::= { status 4 }
+
+procTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ProcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "List of managed processes"
+    ::= { status 5 }
+
+procEntry OBJECT-TYPE
+    SYNTAX      ProcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one process"
+    INDEX   { procIndex }
+    ::= { procTable 1 }
+
+ProcEntry ::=
+    SEQUENCE {
+        procIndex             Unsigned32,
+        procName              OCTET STRING,
+        procStatus            OCTET STRING,
+        procNumFailures       Unsigned32
+    }
+
+procIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric unique ID of process"
+    ::= { procEntry 1 }
+
+procName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Unique name of process"
+    ::= { procEntry 2 }
+
+procStatus OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current state of process"
+    ::= { procEntry 3 }
+
+procNumFailures OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of times process has crashed or exited unexpectedly"
+    ::= { procEntry 4 }
+
+neighborTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF NeighborEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "List of managed SteelHeads"
+    ::= { status 6 }
+
+neighborEntry OBJECT-TYPE
+    SYNTAX      NeighborEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one SteelHead"
+    INDEX   { neighborIndex }
+    ::= { neighborTable 1 }
+
+NeighborEntry ::=
+    SEQUENCE {
+        neighborIndex             Unsigned32,
+        neighborId                OCTET STRING,
+        neighborName              OCTET STRING,
+        neighborConnectionCount   Unsigned32,
+        neighborConnectionEnable  Unsigned32
+    }
+
+neighborIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric unique ID of SteelHead"
+    ::= { neighborEntry 1 }
+
+neighborId OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "VLAN Segregation disabled: Unique ID of SteelHead
+             VLAN Segregation enabled: [Instance name]:[Unique ID of SteelHead]
+                                       within that instance"
+    ::= { neighborEntry 2 }
+
+neighborName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "VLAN Segregation disabled: Unique name of SteelHead
+             VLAN Segregation enabled: [Instance name]:[Unique name of SteelHead]
+                                       within that instance"
+    ::= { neighborEntry 3 }
+
+neighborConnectionCount OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of optimized connections"
+    ::= { neighborEntry 4 }
+
+neighborConnectionEnable OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "The number of connections to trigger admission control"
+    ::= { neighborEntry 5 }
+
+healthNotes OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Some notes regarding the health of the system"
+    ::= { status 7 }
+
+instanceTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF InstanceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Table of instance information"
+    ::= { status 8 }
+
+instanceEntry OBJECT-TYPE
+    SYNTAX      InstanceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one instance"
+    INDEX   { InstanceIndex }
+    ::= { instanceTable 1 }
+
+InstanceEntry ::=
+    SEQUENCE {
+        instanceIndex             Unsigned32,
+        instanceInfo              OCTET STRING,
+    }
+
+instanceIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric unique ID of instance"
+    ::= { instanceEntry 1 }
+
+instanceInfo OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Information for instance"
+    ::= { instanceEntry 2 }
+
+interfaceStatsTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF InterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Interface Related Statistics"
+    ::= { status 9 }
+
+interfaceEntry OBJECT-TYPE
+    SYNTAX      InterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one interface"
+    INDEX   { interfaceIndex }
+    ::= { interfaceStatsTable 1 }
+
+InterfaceEntry ::=
+    SEQUENCE {
+        interfaceIndex             Unsigned32,
+        interfaceName              OCTET STRING,
+        interfaceRxDrops           Unsigned32,
+        interfaceTxDrops           Unsigned32,
+        interfaceSoftwareDrops     Unsigned32,
+        interfaceFlowCtrlPkts      Unsigned32
+    }
+
+interfaceIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric index for interface"
+    ::= { interfaceEntry 1 }
+
+interfaceName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Name of the inpath interface"
+    ::= { interfaceEntry 2 }
+
+interfaceRxDrops OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Packets dropped on receive at NIC level"
+    ::= { interfaceEntry 3 }
+
+interfaceTxDrops OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Packets dropped on trasmit at NIC level"
+    ::= { interfaceEntry 4 }
+
+interfaceSoftwareDrops OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Packets dropped in software processing layers"
+    ::= { interfaceEntry 5 }
+
+interfaceFlowCtrlPkts OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "XOFF Flow control packets transmitted"
+    ::= { interfaceEntry 6 }
+
+--
+--
+-- CONFIG
+--
+--
+
+activeConfig OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current active configuration"
+    ::= { config 1 }
+
+--
+--
+-- ALARMS
+--
+--
+
+alarmsPrefix OBJECT IDENTIFIER
+    ::= { alarms 1 }
+
+loadAlertsPrefix OBJECT IDENTIFIER
+    ::= { alarms 2 }
+
+clusterAlertsPrefix OBJECT IDENTIFIER
+    ::= { alarms 3 }
+
+instanceAlertsPrefix OBJECT IDENTIFIER
+    ::= { alarms 4 }
+
+networkAlertsPrefix OBJECT IDENTIFIER
+    ::= { alarms 5 }
+
+procCrash NOTIFICATION-TYPE
+    OBJECTS { procIndex, procName }
+    STATUS  current
+    DESCRIPTION
+            "A procCrash trap signifies that a process managed by PM
+	    has crashed and left a core file.  The variable sent with
+            the notification indicates which process crashed."
+    ::= { alarmsPrefix 1 }
+
+procExit NOTIFICATION-TYPE
+    OBJECTS { procIndex, procName }
+    STATUS  current
+    DESCRIPTION
+            "A procExit trap signifies that a process managed by PM
+	    has exited unexpectedly, but not left a core file.
+	    The variable sent with the notification indicates 
+            which process exited."
+    ::= { alarmsPrefix 2 }
+
+cpuUtil NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The average CPU utilization in the past minute has gone
+            above the acceptable threshold"
+    ::= { alarmsPrefix 3 }
+
+pagingActivity NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The system has been paging excessively (thrashing)"
+    ::= { alarmsPrefix 4 }
+
+bypassMode NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The appliance has entered bypass (failthru) mode"
+    ::= { alarmsPrefix 5 }
+
+admissionMemError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control memory alarm has been triggered"
+    ::= { alarmsPrefix 6 }
+
+admissionConnError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control connections alarm has been triggered"
+    ::= { alarmsPrefix 7 }
+
+scheduledJobError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A scheduled job has failed during execution"
+    ::= { alarmsPrefix 8 }
+
+confModeEnter NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A user has entered configuration mode"
+    ::= { alarmsPrefix 9 }
+
+confModeExit NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A user has exited configuration mode"
+    ::= { alarmsPrefix 10 }
+
+linkError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface has lost link on the appliance"
+    ::= { alarmsPrefix 11 }
+
+powerSupplyError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A power supply on the appliance has failed. Not supported on all models"
+    ::= { alarmsPrefix 12 }
+
+fanError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A fan error has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 13 }
+
+memoryError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A memory error has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 14 }
+
+ipmi NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "An IPMI event has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 15 }
+
+linkPropagationStateError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface has link propagation state error on the appliance"
+    ::= { alarmsPrefix 16 }
+
+configChange NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A change has been made to the system's configuration"
+    ::= { alarmsPrefix 17 }
+
+temperatureWarning NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature has exceeded the threshold" 
+    ::= { alarmsPrefix 18 }
+
+temperatureCritical NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature has reached a critical stage" 
+    ::= { alarmsPrefix 19 }
+
+hardwareError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Hardware Error detected"
+    ::= { alarmsPrefix 20 }
+
+systemDiskFullError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "One or more system partitions is full or almost full"
+    ::= { alarmsPrefix 21 }
+
+raidError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An error has been generated by the RAID array"
+    ::= { alarmsPrefix 22 }
+
+linkPropagationStateAllError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Link state propagation is detected on all enabled in-path interfaces"
+    ::= { alarmsPrefix 23 }
+
+xbridgeError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Xbridge is enabled but not running"
+    ::= { alarmsPrefix 24 }
+
+licenseError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The main Appliance license has expired, been removed, or become invalid"
+    ::= { alarmsPrefix 25 }
+
+licenseExpiring NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "One or more licensed features will expire within the next two weeks"
+    ::= { alarmsPrefix 26 }
+
+licenseExpired NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "One or more licensed features have expired"
+    ::= { alarmsPrefix 27 }
+
+admissionServiceError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control service alarm has been triggered"
+    ::= { alarmsPrefix 28 }
+
+linkDuplex NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface on the appliance is in half-duplex mode"
+    ::= { alarmsPrefix 70 } 
+
+linkIoErrors NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface on the appliance is suffering I/O errors"
+    ::= { alarmsPrefix 71 }
+
+cpuUtilClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The average CPU utilization has fallen back 
+             within the acceptable threshold"
+    ::= { alarmsPrefix 1003 }
+
+pagingActivityClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The system has stopped paging excessively (thrashing)"
+    ::= { alarmsPrefix 1004 }
+
+bypassModeClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Traffic is now being optimized"
+    ::= { alarmsPrefix 1005 }
+
+admissionMemErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control memory alarm has been cleared,
+             and the optimization service is running normally"
+    ::= { alarmsPrefix 1006 }
+
+admissionConnErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control connections alarm has been cleared,
+             and the service is running normally"
+    ::= { alarmsPrefix 1007 }
+
+linkErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface on the appliance has regained its link"
+    ::= { alarmsPrefix 1011 }
+
+powerSupplyErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "All power supplies are now functioning normally" -- Not supported on all models
+    ::= { alarmsPrefix 1012 }
+
+fanErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "All system fans are now functioning normally" -- Not supported on all models
+    ::= { alarmsPrefix 1013 }
+
+memoryErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A memory error has been rectified on the appliance" -- Not supported on all models
+    ::= { alarmsPrefix 1014 }
+
+ipmiClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "An IPMI event has been rectified on the appliance" -- Not supported on all models
+    ::= { alarmsPrefix 1015 }
+
+linkPropagationStateErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A link propagation state error on an interface on the appliance
+             has been rectified"
+    ::= { alarmsPrefix 1016 }
+
+temperatureNormal NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature is back within the threshold" 
+    ::= { alarmsPrefix 1018 }
+
+temperatureNonCritical NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature is no longer in a critical stage" 
+    ::= { alarmsPrefix 1019 }
+
+hardwareErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Hardware Error has been cleared"
+    ::= { alarmsPrefix 1020 }
+
+systemDiskFullErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The system partitions are below usage thresholds"
+    ::= { alarmsPrefix 1021 }
+
+raidErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A RAID error has been cleared"
+    ::= { alarmsPrefix 1022 }
+
+linkPropagationStateAllErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Some link propagation state error on the appliance
+             has been rectified"
+    ::= { alarmsPrefix 1023 }
+
+xbridgeErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An Xbridge error has been cleared"
+    ::= { alarmsPrefix 1024 }
+
+admissionServiceErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Admission control service alarm has been cleared,
+             and the optimization service is running normally"
+    ::= { alarmsPrefix 1028 }
+
+linkDuplexClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface on the appliance has cleared the half-duplex error"
+    ::= { alarmsPrefix 1070 }
+
+linkIoErrorsClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "An interface on the appliance has cleared the I/O errors state"
+    ::= { alarmsPrefix 1071  }
+
+loadOversubscriptionAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A load SteelHead has been reported as oversubscribed"
+    ::= { loadAlertsPrefix 1 }
+
+loadUnpairedAlertError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A load SteelHead has been reported as unpaired"
+    ::= { loadAlertsPrefix 2 }
+
+loadRemoteAlertError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A remote SteelHead has timed out"
+    ::= { loadAlertsPrefix 3 }
+
+loadBalanceServiceAlertError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The SteelHead Interceptor service is not running"
+    ::= { loadAlertsPrefix 4 }
+
+suspectedScannerAlertError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "There is suspected scanner traffic on the network"
+    ::= { networkAlertsPrefix 1 }
+
+clusterDisconnectedSHAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A cluster SteelHead has been reported as disconnected"
+    ::= { clusterAlertsPrefix 1 }
+
+clusterDisconnectedIBAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A cluster SteelHead Interceptor has been reported as disconnected"
+    ::= { clusterAlertsPrefix 2 }
+
+clusterAdmissionConnAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A cluster SteelHead has been reported to be in Admission Control"
+    ::= { clusterAlertsPrefix 3 }
+
+clusterCapacityAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A cluster SteelHead has been reported to be at capacity"
+    ::= { clusterAlertsPrefix 4 }
+
+clusterPermPenaltyAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A cluster SteelHead has been reported to have a permanent penalty"
+    ::= { clusterAlertsPrefix 5 }
+
+clusterVersionIncompatibleIcAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A version incompatibility in SteelHead Interceptors has been detected"
+    ::= { clusterAlertsPrefix 6 }
+
+clusterVersionIncompatibleShAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A version incompatibility in SteelHeads has been detected"
+    ::= { clusterAlertsPrefix 7 }
+
+InstanceHealthAlertError NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "An instance error has been detected"
+    ::= { instanceAlertsPrefix 1 }
+
+loadOversubscriptionAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "Load SteelHeads are no longer oversubscribed"
+    ::= { loadAlertsPrefix 1001 }
+
+loadUnpairedAlertClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Load SteelHeads are no longer unpaired"
+    ::= { loadAlertsPrefix 1002 }
+
+loadRemoteAlertClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Remote SteelHeads are no longer timed out"
+    ::= { loadAlertsPrefix 1003 }
+
+loadBalanceServiceAlertClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The SteelHead Interceptor service is back up and running"
+    ::= { loadAlertsPrefix 1004 }
+
+suspectedScannerAlertClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Suspected scanner traffic is no longer running on the network"
+    ::= { networkAlertsPrefix 1001 }
+
+clusterDisconnectedSHAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "All cluster SteelHeads are currently connected"
+    ::= { clusterAlertsPrefix 1001 }
+
+clusterDisconnectedIBAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "All cluster SteelHead Interceptors are currently connected"
+    ::= { clusterAlertsPrefix 1002 }
+
+clusterAdmissionConnAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "Cluster SteelHeads are no longer under admission control"
+    ::= { clusterAlertsPrefix 1003 }
+
+clusterCapacityAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "Cluster SteelHeads are no longer at capacity"
+    ::= { clusterAlertsPrefix 1004 }
+
+clusterPermPenaltyAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "Cluster SteelHeads are no longer issued a permanent penalty"
+    ::= { clusterAlertsPrefix 1005 }
+
+clusterVersionIncompatibleIcAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A version incompatibility in SteelHead Interceptors has been corrected"
+    ::= { clusterAlertsPrefix 1006 }
+
+clusterVersionIncompatibleShAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "A version incompatibility in SteelHeads has been corrected"
+    ::= { clusterAlertsPrefix 1007 }
+
+instanceHealthAlertClear NOTIFICATION-TYPE
+    OBJECTS { instanceInfo }
+    STATUS  current
+    DESCRIPTION
+            "An instance error has been corrected"
+    ::= { instanceAlertsPrefix 1001 }
+
+--
+-- 
+-- STATISTICS
+--
+--
+
+cpuLoad OBJECT IDENTIFIER
+    ::= { statistics 1 }
+
+cpuLoad1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "One-minute CPU load in hundreths"
+    ::= { cpuLoad 1 }
+
+cpuLoad5 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "One-minute CPU load in hundreths"
+    ::= { cpuLoad 2 }
+
+cpuLoad15 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Fifteen-minute CPU load in hundreths"
+    ::= { cpuLoad 3 }
+
+cpuUtil1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Percentage CPU utilization, aggregated across all CPUs, rolling
+	average over the past minute"
+    ::= { cpuLoad 4 }
+
+cpuIndivUtilTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF CPUIndivUtilEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Details about the individual CPU utilization"
+    ::= { cpuLoad 5 }
+
+cpuIndivUtilEntry OBJECT-TYPE
+    SYNTAX      CPUIndivUtilEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one cpu"
+    INDEX   { cpuIndivIndex }
+    ::= {cpuIndivUtilTable 1 }
+
+CPUIndivUtilEntry ::=
+    SEQUENCE {
+        cpuIndivIndex       Unsigned32,
+        cpuIndivId          Unsigned32,
+        cpuIndivIdleTime    Unsigned32,
+        cpuIndivSystemTime  Unsigned32,
+        cpuIndivUserTime    Unsigned32
+}
+
+cpuIndivIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A synthetic number numbering the cpus"
+    ::= { cpuIndivUtilEntry 1 }
+
+cpuIndivId OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Name of the cpu, also serves as the Index for the table"
+    ::= { cpuIndivUtilEntry 2 }
+
+cpuIndivIdleTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Idle time for this CPU"
+    ::= { cpuIndivUtilEntry 3 }
+
+cpuIndivSystemTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "System time for this CPU"
+    ::= { cpuIndivUtilEntry 4 }
+
+cpuIndivUserTime OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "User time for this CPU"
+    ::= { cpuIndivUtilEntry 5 }
+
+
+--
+--
+-- TRAP TEST
+--
+--
+
+trapTest NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Trap test"
+    ::= { test 1 }
+
+END

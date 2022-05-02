@@ -1,0 +1,1659 @@
+ACORN-MIB DEFINITIONS ::= BEGIN
+                                                                    
+IMPORTS
+	enterprises, 
+	OBJECT-TYPE, 
+	MODULE-IDENTITY, 
+	Integer32,
+	NOTIFICATION-TYPE
+		FROM SNMPv2-SMI
+	DisplayString
+		FROM SNMPv2-TC;
+
+acornTop MODULE-IDENTITY
+	LAST-UPDATED "200806090946Z"
+	ORGANIZATION "Juniper Networks Inc"
+	CONTACT-INFO
+		"Technical Support
+		Juniper Networks Inc.
+		5320 Spectrum Drive
+		Frederick, MD 21703
+		USA
+		888-314-JTAC"
+	DESCRIPTION
+		"This is the MIB module at the top of the Acorn enterprise group (now owned by Juniper Networks)."
+	REVISION "200806090946Z"
+	DESCRIPTION
+		"Revision 1.2"
+	::= { enterprises 18841 }
+
+--=================================================
+-- Acorn Common Objects
+--=================================================
+acorn OBJECT IDENTIFIER	::= { acornTop 1 }
+
+--=================================================
+-- Acorn Common Objects
+--=================================================
+acornCommon OBJECT IDENTIFIER	::= { acorn 1 }
+
+companyName OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Company name"
+	::= { acornCommon 1 }
+
+companyAddr OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Company Address"
+	::= { acornCommon 2 }
+
+companyPhone OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Company phone"
+	::= { acornCommon 3 }
+
+companyFax OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION "Company Fax"
+	::= { acornCommon 4 }
+
+acornProduct OBJECT IDENTIFIER	::= { acorn 2 }
+
+ctp OBJECT IDENTIFIER::= { acornProduct 1 }
+
+-------------------
+-- Node level
+-------------------
+
+node OBJECT IDENTIFIER::= { ctp 1 }
+
+nodeModel OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Model name of this product."
+	DEFVAL { "" }
+	::= { node 1 }
+
+nodeSwRev OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Firmware version"
+	::= { node 2 }
+
+nodeLogHost OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Network Logging host"
+	::= { node 3 }
+
+nodeNetMon1 OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..200))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Network Monitor Query, type 1 (www_mon1)"
+	::= { node 4 }
+
+-------------------
+-- Reference level
+-------------------
+
+nodeReference OBJECT IDENTIFIER::= { node 5 }
+
+refOut OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"32KHz reference output enable (1=yes)"
+	::= { nodeReference 1 }
+
+numRefs OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Number of references on whole box"
+	::= { nodeReference 2 }
+
+refTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF RefEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of reference entries. The number of references is given by the value of CtpNumRefs"
+	::= { nodeReference 3 }
+
+refEntry OBJECT-TYPE
+	SYNTAX RefEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing management information applicable to a particular clock reference"
+	INDEX  { refIndex }
+	::= { refTable 1 }
+
+RefEntry ::=
+	SEQUENCE {
+		refIndex	Integer32,
+		refId		Integer32,
+		refSrc		Integer32,
+		refFreq		Integer32,
+		refValid	Integer32
+	}
+
+refIndex OBJECT-TYPE
+	SYNTAX Integer32 (1..5)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"reference SNMP Index (1 higher than CTP index)"
+	::= { refEntry 1 }
+
+refId OBJECT-TYPE
+	SYNTAX Integer32 (0..4)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"reference ctp-centric Identifier (0-4)"
+	::= { refEntry 2 }
+
+refSrc OBJECT-TYPE
+	SYNTAX Integer32 (0..6)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Reference Input Source (0=port0, 1=port1, 2=port2, 3=port3, 4=External Input, 5=Disabled)"
+	::= { refEntry 3 }
+
+refFreq OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Configured Reference Frequency. If value is 65536, then reference is 1544 kHz (T1). Otherwise, it is N x 32 kHz."
+	::= { refEntry 4 }
+
+refValid OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Reference Input Validity (0=No, 1=Yes)"
+	::= { refEntry 5 }
+
+-------------------
+-- Pll level
+-------------------
+
+nodePll OBJECT IDENTIFIER::= { node 6 }
+
+pllLocked OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"PLL Locked (0=No, 1=Yes)"
+	::= { nodePll 1 }
+
+pllRunSec OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"PLL Running time (sec)"
+	::= { nodePll 2 }
+
+pllLossSec OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"PLL Sync Loss Time (sec)"
+	::= { nodePll 3 }
+
+pllRefInUse OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"PLL Reference input currently in use (0=port0, 1=port1, 2=port2, 3=port3, 4=External Input, 5=Holdover, 6=Fixed/Calibrated, 7=Fixed/Centered)"
+	::= { nodePll 4 }
+
+pllHoldOverValid OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"PLL Clock Holdover Frequency Validated and Saved (0=No, 1=Yes)"
+	::= { nodePll 5 }
+
+pllClrCnts OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+		"Clear PLL counts (set only). Set to string=yes for clear operation"
+	::= { nodePll 6 }
+
+-------------------
+-- Fan level
+-------------------
+
+fan OBJECT IDENTIFIER::= { node 7 }
+
+fanStatus OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall CTP1000 Fan Status or CTP2000 Fan and/or Power Status (0=OK, 1=Bad)"
+	::= { fan 1 }
+
+fanRpmSys OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"System Fan Speed (RPM). --- means N/A"
+	::= { fan 2 }
+
+fanRpmCpu OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"CPU Fan Speed (RPM). --- means N/A"
+	::= { fan 3 }
+
+-------------------
+-- Power level
+-------------------
+
+power OBJECT IDENTIFIER::= { node 8 }
+
+powerStatus OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall Power Status (0=OK, 1=Bad)"
+	::= { power 1 }
+
+powerVcore OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"CPU Core Voltage (volts). --- means N/A"
+	::= { power 2 }
+
+powerVbat OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Battery Voltage (volts). --- means N/A"
+	::= { power 3 }
+
+power-1p5v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"1.5V Supply Output Voltage (volts). --- means N/A"
+	::= { power 4 }
+
+power-3p3v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"3.3V Supply Output Voltage (volts). --- means N/A"
+	::= { power 5 }
+
+power-5v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"+5V Supply Output Voltage (volts). --- means N/A"
+	::= { power 6 }
+
+power-n5v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"-5V Supply Output Voltage (volts). --- means N/A"
+	::= { power 7 }
+
+power-12v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"+12V Supply Output Voltage (volts). --- means N/A"
+	::= { power 8 }
+
+power-n12v OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"-12V Supply Output Voltage (volts). --- means N/A"
+	::= { power 9 }
+
+-------------------
+-- Temperature level
+-------------------
+
+temp OBJECT IDENTIFIER::= { node 9 }
+
+tempStatus OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall Temperature Status (0=OK, 1=Bad)"
+	::= { temp 1 }
+
+tempSys OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"System Temperature (degrees C). --- means N/A"
+	::= { temp 2 }
+
+tempCpu OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"CPU Temperature (degrees C). --- means N/A"
+	::= { temp 3 }
+
+-------------------
+-- Bundle level
+-------------------
+
+bundle OBJECT IDENTIFIER::= { ctp 2 }
+
+bundleNum OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Number of configured bundles on node. Bundles may be administratively DISABLED or ACTIVE"
+	::= { bundle 1 }
+
+-------------------
+-- Bundle Configuration Table
+-------------------
+bundleCfgTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF BundleCfgEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of bundle configuration entries. Bundle Types C=CTP,
+		S=SAToP, T=CESoPSN, V=VCOMP"
+	::= { bundle 2 }
+
+bundleCfgEntry OBJECT-TYPE
+	SYNTAX BundleCfgEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing configuration information applicable to a
+		particular bundle"
+	INDEX  { bundleIndex }
+	::= { bundleCfgTable 1 }
+
+
+BundleCfgEntry ::=
+	SEQUENCE {
+		bundleIndex		Integer32,
+		bundleId		Integer32,
+		bundleType		Integer32,
+		bundleDescr		DisplayString,
+		bundleAllocPorts	DisplayString,
+		bundleDbState		Integer32,
+		bundleCard		Integer32,
+		bundleRemAddr		DisplayString,
+		bundleRemCid		Integer32,
+		bundleLocCid		Integer32,
+		bundleVipEnable		Integer32,
+		bundleVipIp		DisplayString,
+		bundlePktSize		Integer32,
+		bundleBufMax		DisplayString,
+		bundleBufSet		DisplayString,
+		bundleBufMin		DisplayString,
+		bundleTos		Integer32,
+		bundleTtl		Integer32,
+		bundleCfgFlags		DisplayString,
+		bundleAdap		Integer32,
+		bundleTsMask		DisplayString
+	}
+
+bundleIndex OBJECT-TYPE
+	SYNTAX Integer32 (1..64)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Bundle table index (SNMP index, starting at 1)"
+	::= { bundleCfgEntry 1 }
+
+bundleId OBJECT-TYPE
+	SYNTAX Integer32 (0..63)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle number (CTP index, starting at 0)"
+	::= { bundleCfgEntry 2 }
+
+bundleType OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Type (0=None, 1=CTP, 2=SAToP, 3=CESoPSN, 4=VCOMP)"
+	::= { bundleCfgEntry 3 }
+
+bundleDescr OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Desription String (Configured By User)"
+	::= { bundleCfgEntry 4 }
+
+bundleAllocPorts OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) CTP Port Id of single port used by bundle. Multiport bundles (e.g. VCOMP) only show first port"
+	::= { bundleCfgEntry 5 }
+
+bundleDbState OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Administrative State (0=Disabled, 1=Active)"
+	::= { bundleCfgEntry 6 }
+
+bundleCard OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"( ) Card ID of bundling engine (Unused, Reserved)"
+	::= { bundleCfgEntry 7 }
+
+bundleRemAddr OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Destination IP address"
+	::= { bundleCfgEntry 8 }
+
+bundleRemCid OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Remote Circuit Identifier"
+	::= { bundleCfgEntry 9 }
+
+bundleLocCid OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C) Bundle Local Circuit Identifier"
+	::= { bundleCfgEntry 10 }
+
+bundleVipEnable OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Virtual IP Address Enabled (0=No, 1=Yes)"
+	::= { bundleCfgEntry 11 }
+
+bundleVipIp OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Virtual IP Address"
+	::= { bundleCfgEntry 12 }
+
+bundlePktSize OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T) Bundle IP Packet Payload Size"
+	::= { bundleCfgEntry 13 }
+
+bundleBufMax OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Buffer Maximum Threshold (ms)"
+	::= { bundleCfgEntry 14 }
+
+bundleBufSet OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Buffer Fill Level (ms)"
+	::= { bundleCfgEntry 15 }
+
+bundleBufMin OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/V) Bundle Buffer Minimum Threshold (ms)"
+	::= { bundleCfgEntry 16 }
+
+bundleTos OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/V) Bundle IP header TOS Byte Value (hex)"
+	::= { bundleCfgEntry 17 }
+
+bundleTtl OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/V) Bundle IP header Time-To-Live Byte Value (hex)"
+	::= { bundleCfgEntry 18 }
+
+bundleCfgFlags OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Flags 0x40=NotDirectDrive, 0x80=UniDirSrc, 0x100=UniDirSnk, 0x200=SAToP"
+	::= { bundleCfgEntry 19 }
+
+bundleAdap OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle WinPath Adaptive Clocking Enabled (0=No, 1=Yes)."
+	::= { bundleCfgEntry 20 }
+
+bundleTsMask OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Time Slot Enable Mask (bit0=Chan1, bit1=Chan2, etc...)."
+	::= { bundleCfgEntry 21 }
+
+-------------------
+-- Bundle Status Table
+-------------------
+bundleStatTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF BundleStatEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of bundle status entries. Bundle Types C=CTP, S=SAToP, T=CESoPSN, V=VCOMP"
+	::= { bundle 3 }
+
+bundleStatEntry OBJECT-TYPE
+	SYNTAX BundleStatEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing status information applicable to a particular bundle"
+	INDEX  { bundleIndex }
+	::= { bundleStatTable 1 }
+
+
+BundleStatEntry ::=
+	SEQUENCE {
+		bundleOperState			Integer32,
+		bundleCntIfBoundPkt		Integer32,
+		bundleCntNetBoundPkt		Integer32,
+		bundleCntLatePkt		Integer32,
+		bundleCntMissingPkt		Integer32,
+		bundleCntRestart		Integer32,
+		bundleCntUnderFlow		Integer32,
+		bundleCntOverFlow		Integer32,
+		bundleCntStarve			Integer32,
+		bundleBufMinuteLow		Integer32,
+		bundleBufMinuteAvg		Integer32,
+		bundleBufMinuteHigh		Integer32,
+		bundleCntRxFwd			Integer32,
+		bundleCntRxDropped		Integer32,
+		bundleCntRxMtuDropped		Integer32,
+		bundleCntRxQTxDropped		Integer32,
+		bundleCntTxFwd			Integer32,
+		bundleCntTxDropped		Integer32,
+		bundleCntTxOutOfWindow		Integer32,
+		bundleCntTxOverrunPkts		Integer32,
+		bundleCntTxWindowSwitch		Integer32,
+		bundleCntTxOverrunEvents	Integer32,
+		bundleCntTxStray		Integer32,
+		bundleCntTxMalformed		Integer32,
+		bundleCntTxAisDropped		Integer32,
+		bundleCntTxMultiple		Integer32,
+		bundleCntTxMplsDropped		Integer32,
+		bundleCntTxDenied		Integer32,
+		bundleCntTxOutOfSeq		Integer32,
+		bundleCntTxOutOfBandCas		Integer32,
+		bundleJitter			DisplayString,
+		bundleLatency			Integer32
+	}
+
+bundleOperState OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle Runtime State (0=NotCfg, 1=NoSync, 2=Eval, 3=Running, 4=MisCfg, 5=CfgFail, 6=TtFail, 7=ArpWait, 8=InSync, 9=NotPrsnt, 10=TooFast, 11=TooSlow, 12=AutoWait, 13-N/A)"
+	::= { bundleStatEntry 1 }
+
+bundleCntIfBoundPkt OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Interface-Bound IP Packet Count."
+	::= { bundleStatEntry 2 }
+
+bundleCntNetBoundPkt OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Network-Bound IP Packet Count."
+	::= { bundleStatEntry 3 }
+
+bundleCntLatePkt OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Late IP Packet Count."
+	::= { bundleStatEntry 4 }
+
+bundleCntMissingPkt OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Missing IP Packet Count."
+	::= { bundleStatEntry 5 }
+
+bundleCntRestart OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Restart Count (Under/Overflow, Recenter, or Startup will increment counter."
+	::= { bundleStatEntry 6 }
+
+bundleCntUnderFlow OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Buffer Underflow Count."
+	::= { bundleStatEntry 7 }
+
+bundleCntOverFlow OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Buffer Overflow Count."
+	::= { bundleStatEntry 8 }
+
+bundleCntStarve	OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Starvation Count (Too many missing IP packets from Netowrk)."
+	::= { bundleStatEntry 9 }
+
+bundleBufMinuteLow OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Buffer Minimum Level in current 1 minute measurement interval (usec)."
+	::= { bundleStatEntry 10 }
+
+bundleBufMinuteAvg OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Buffer Average Level in current 1 minute measurement interval (usec)."
+	::= { bundleStatEntry 11 }
+
+bundleBufMinuteHigh OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Bundle Buffer Maximum Level in current 1 minute measurement interval (usec)."
+	::= { bundleStatEntry 12 }
+
+bundleCntRxFwd OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Network-Bound IP packet count."
+	::= { bundleStatEntry 13 }
+
+bundleCntRxDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Network-Bound Dropped IP packet count (due to H/W not ready)."
+	::= { bundleStatEntry 14 }
+
+bundleCntRxMtuDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Network-Bound Dropped IP packet count (due to MTU issue)."
+	::= { bundleStatEntry 15 }
+
+bundleCntRxQTxDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Network-Bound Dropped IP packet count (due to queue issue)."
+	::= { bundleStatEntry 16 }
+
+bundleCntTxFwd OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound IP packet count."
+	::= { bundleStatEntry 17 }
+
+bundleCntTxDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Dropped IP packet count (due to H/W not ready)."
+	::= { bundleStatEntry 18 }
+
+bundleCntTxOutOfWindow OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Late/Missing IP packet count."
+	::= { bundleStatEntry 19 }
+
+bundleCntTxOverrunPkts OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Dropped IP packet count (due to overrun condition)."
+	::= { bundleStatEntry 20 }
+
+bundleCntTxWindowSwitch OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Window Switch count."
+	::= { bundleStatEntry 21 }
+
+bundleCntTxOverrunEvents OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Buffer Overflow Count."
+	::= { bundleStatEntry 22 }
+
+bundleCntTxStray OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Stray count."
+	::= { bundleStatEntry 23 }
+
+bundleCntTxMalformed OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Malformed IP Packet count."
+	::= { bundleStatEntry 24 }
+
+bundleCntTxAisDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Dropped IP packet count (due to T1/E1 AIS condition)."
+	::= { bundleStatEntry 25 }
+
+bundleCntTxMultiple OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Duplicate IP packet count."
+	::= { bundleStatEntry 26 }
+
+bundleCntTxMplsDropped OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Dropped IP packet count (due to abnormal MPLS condition)."
+	::= { bundleStatEntry 27 }
+
+bundleCntTxDenied OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Denied IP packet count."
+	::= { bundleStatEntry 28 }
+
+bundleCntTxOutOfSeq OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Out-Of-Sequence IP packet count."
+	::= { bundleStatEntry 29 }
+
+bundleCntTxOutOfBandCas OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Bound Out-Of-Band CAS IP packet count."
+	::= { bundleStatEntry 30 }
+-------------------
+-- Aricent PR 1106063 - START
+-------------------
+bundleJitter OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Jitter count."
+	::= { bundleStatEntry 31 }
+
+bundleLatency OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(T) Bundle Interface-Latency count."
+	::= { bundleStatEntry 32 }
+
+-------------------
+-- Aricent PR 1106063 - END
+-------------------
+
+-------------------
+-- Bundle Control Table
+-------------------
+bundleCtrlTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF BundleCtrlEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of bundle control entries. Bundle Types C=CTP, S=SAToP, T=CESoPSN, V=VCOMP"
+	::= { bundle 4 }
+
+bundleCtrlEntry OBJECT-TYPE
+	SYNTAX BundleCtrlEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing status information applicable to a particular bundle"
+	INDEX  { bundleIndex }
+	::= { bundleCtrlTable 1 }
+
+
+BundleCtrlEntry ::=
+	SEQUENCE {
+		bundleClrCounts	DisplayString
+	}
+
+bundleClrCounts OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-write
+	STATUS current
+	DESCRIPTION
+		"(C/S/T/V) Bundle counters clear (set only). Set value to string = <SNMP bundle index> for clear operation."
+	::= { bundleCtrlEntry 1 }
+
+-------------------
+-- Card level
+-------------------
+
+card OBJECT IDENTIFIER::= { ctp 3 }
+
+ctpNumCards OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Number of cards on product"
+	::= { card 1 }
+
+cardTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF CardEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of card entries. The number of cards is given by the value of CtpNumCards"
+	::= { card 2 }
+
+cardEntry OBJECT-TYPE
+	SYNTAX CardEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing management information applicable to a particular card"
+	INDEX  { cardIndex }
+	::= { cardTable 1 }
+
+
+CardEntry ::=
+	SEQUENCE {
+		cardIndex	Integer32,
+		cardSlot	Integer32,
+		cardType	Integer32,
+		cardHwRev	DisplayString,
+		cardFpgaRev	DisplayString,
+		cardPldRev	DisplayString,
+		cardSerNum	Integer32,
+		cardBaseScc	Integer32,
+		cardTemp	Integer32
+	}
+
+cardIndex OBJECT-TYPE
+	SYNTAX Integer32 (1..7)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card SNMP index (starts at 1)"
+	::= { cardEntry 1 }
+
+cardSlot OBJECT-TYPE
+	SYNTAX Integer32 (0..6)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card slot number (starts at 0)"
+	::= { cardEntry 2 }
+
+cardType OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card Type (1=Serial, 2=T1E1, 3=4WE&M, 4=FXS, 5=FXO, 6=VCB)"
+	::= { cardEntry 3 }
+
+cardHwRev OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card PCA Revision (0xff indicates function unsupported by card)"
+	::= { cardEntry 4 }
+
+cardFpgaRev OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card FPGA Revision (hex)"
+	::= { cardEntry 5 }
+
+cardPldRev OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card PLD Revision (hex)"
+	::= { cardEntry 6 }
+
+cardSerNum OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card Serial Number (decimal). 99999999 = Invalid"
+	::= { cardEntry 7 }
+
+cardBaseScc OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card First scc device (decimal)"
+	::= { cardEntry 8 }
+
+cardTemp OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card Temperature (degrees C). 0 indicates function not supported by card."
+	::= { cardEntry 9 }
+
+-------------------
+-- Port table
+-------------------
+
+port OBJECT IDENTIFIER::= { ctp 4 }
+
+ctpNumPorts OBJECT-TYPE
+	SYNTAX Integer32 (0..99)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Number of ports installed in node"
+	::= { port 1 }
+
+portTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF PortEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"A list of port entries. The number of ports is given by the value of CtpNumPorts"
+	::= { port 2 }
+
+portEntry OBJECT-TYPE
+	SYNTAX PortEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION
+		"An entry containing management information applicable to a particular port"
+	INDEX  { cardIndex, portIndex }
+	::= { portTable 1 }
+
+PortEntry ::=
+	SEQUENCE {
+		portIndex	Integer32,
+		portId		Integer32,
+		portCardId	Integer32,
+		portHw		Integer32,
+		portProto	Integer32,
+		portDescr	DisplayString,
+		portDbState	Integer32,
+		portSpeed	DisplayString,
+		portClkCfg	Integer32,
+		portIfDceDte	Integer32,
+		portIfEncoding	Integer32,
+		portIfMode	Integer32,
+		portCfgFlags	DisplayString,
+		portTt		DisplayString,
+		portRunFlags	DisplayString
+	}
+
+portIndex OBJECT-TYPE
+	SYNTAX Integer32 (1..32)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port SNMP Index number (Starts at 1)"
+	::= { portEntry 1 }
+
+portId OBJECT-TYPE
+	SYNTAX Integer32 (0..31)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port on card (Starts at 0)"
+	::= { portEntry 2 }
+
+portCardId OBJECT-TYPE
+	SYNTAX Integer32 (0..7)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Card number to which port belongs (starts at 0)"
+	::= { portEntry 3 }
+
+portHw OBJECT-TYPE
+	SYNTAX Integer32 (0..7)
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Hardware (0=Serial/NoDCARD, 1=Serial/4WTO, 2=Serial/T1E1, 3=T1E1, 4=Serial/IRIG, 5=4WEM, 6=FXS, 7=FXO)"
+	::= { portEntry 4 }
+
+portProto OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Operating Mode (0=CircuitEmulation, 1=PBS(Layer3), 2=Bridged(Layer2) )"
+	::= { portEntry 5 }
+
+portDescr OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port user-entered Description string. --- is undefined"
+	::= { portEntry 6 }
+
+portDbState OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Administrative State (0=Disabled, 1=Active). PBS/Bridge port mode only."
+	::= { portEntry 7 }
+
+portSpeed OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Clock Synthesizer Rate"
+	::= { portEntry 8 }
+
+portClkCfg OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Canned Clock Config (0=Custom, 1-DDS/NoTT, 2=DDS/TT, 3=AllTT, 4=AdapTT, 5=AdapNoTT, 6=AutoBaudTT, 7=AutoBaudNoTT, 8=T1E1CtpSrc, 9=T1E1Loop, 10=T1E1Adap, 11=VoiceMstr, 12=VoiceSlv, 13=IsochMstr, 14=IsochSlv, 15=CdiMstr, 16=CdiSlv, 17=MstarMstr, 18=MstarSlv, 19=TransMstr, 20=TransSlv,
+		21=DteStRt"
+	::= { portEntry 9 }
+
+portIfDceDte OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Mode (0=DCE, 1=DTE)"
+	::= { portEntry 10 }
+
+portIfEncoding OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Encoding (0=NRZ, 1=ISOCH, 2=CDI, 3=MSTAR, 4=TRANS)"
+	::= { portEntry 11 }
+
+portIfMode OBJECT-TYPE
+	SYNTAX Integer32
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Electrical Interface (0=EIA530, 1=EAI530A, 2=RS232, 3=V.35, 4=OFF, 5=LOOPBACK, 6=DCARD)"
+	::= { portEntry 12 }
+
+portCfgFlags OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Port Configuration Flags (0x1=TransFifo, 0x2=Redundant, 0x4=SingleEnded, 0x8=RdReclk, 0x10=TransFifoWrClkInv, 0x20=TransFifoRdClkInv, 0x800=TransStIn, 0x1000=TransStOut, 0x4000=HiTtChk, 0x8000=CgateEn, 0x10000=CgateInv, 0x20000=Bridged"
+	::= { portEntry 13 }
+
+portTt OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Measured Frequency on the Interface Clock Input (kHz)"
+	::= { portEntry 14 }
+
+portRunFlags OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Text String indicating which Port Runtime functions are enabled (i.e. BERT, Loops) plus various port specific status flags (i.e. AIS, LOS)"
+	::= { portEntry 15 }
+
+--===================
+-- Traps
+--===================
+-------------------
+-- Trap Info
+-------------------
+
+trapinfo OBJECT IDENTIFIER::= { ctp 5 }
+
+nodeFan OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall CTP1000 Fan Status or CTP2000 Fan and/or Power Status (0=OK, 1=Bad)"
+	::= { trapinfo 1 }
+
+nodePower OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall CTP1000 Power Status (0=OK, 1=Bad)"
+	::= { trapinfo 2 }
+
+nodeTemperature OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Overall Temperature Status (0=OK, 1=Bad)"
+	::= { trapinfo 3 }
+
+nodeRefChange OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Current Node Clock reference in use"
+	::= { trapinfo 4 }
+
+nodeRefValidChange OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Node reference validity status"
+	::= { trapinfo 5 }
+
+bundleRunState OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) current state"
+	::= { trapinfo 6 }
+
+bundleOverFlow OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) overflow event count"
+	::= { trapinfo 7 }
+
+bundleUnderFlow OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) underflow event occurs"
+	::= { trapinfo 8 }
+
+bundleStarve OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) Starvation count"
+	::= { trapinfo 9 }
+
+bundleTtBad OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"(C/S) Port (of bundle) Bad TT value"
+	::= { trapinfo 10 }
+
+---------------------------------
+-- Aricent PR 1382778 fix - Start
+---------------------------------
+bundleT1Alarm OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "(C/S) Port (of bundle) T1 Alarm"
+        ::= { trapinfo 11 }
+
+bundlePtMissing OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) missing packets count"
+        ::= { trapinfo 12 }
+
+bundlePtLate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) late packets count"
+        ::= { trapinfo 13 }
+
+---------------------------------
+-- Aricent PR 1382778 fix - End
+---------------------------------
+
+nodePowerMissing OBJECT-TYPE
+	SYNTAX DisplayString (SIZE (0..80))
+	MAX-ACCESS read-only
+	STATUS current
+	DESCRIPTION
+		"Power supply missing status 0: presents 1: missing"
+	::= { trapinfo 14 }
+
+---------------------------------
+-- Aricent PR 1351742 fix - Start
+---------------------------------
+bundleSdInactive OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) goes to SdInactive"
+        ::= { trapinfo 15 }
+-------------------------------
+-- Aricent PR 1351742 fix - End
+-------------------------------
+
+---------------------------------
+-- Aricent PR 1362733 fix - Start
+---------------------------------
+bundleAdd OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Bundle Add event occurs"
+        ::= { trapinfo 16 }
+
+bundleDisable OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Bundle Disable event occurs"
+        ::= { trapinfo 17 }
+
+bundleCfgChg OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Change in Port or Bundle configuration event occurs"
+        ::= { trapinfo 18 }
+
+bundleActivate OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Bundle Activate event occurs"
+        ::= { trapinfo 19 }
+
+bundleDelete OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Bundle Delete event occurs"
+        ::= { trapinfo 20 }
+
+ntpCfgChg OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Change in NTP configuration event occurs"
+        ::= { trapinfo 21 }
+
+ntpStatus OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "NTP status: Sync or Not in Sync with NTP server"
+        ::= { trapinfo 22 }
+
+nodeTimeChange OBJECT-TYPE
+        SYNTAX DisplayString (SIZE (0..80))
+        MAX-ACCESS read-only
+        STATUS current
+        DESCRIPTION
+                "Change of system date/time event occurs"
+        ::= { trapinfo 23 }
+-------------------------------
+-- Aricent PR 1362733 fix - End
+-------------------------------
+	
+-------------------
+-- Trap Notifications
+-------------------
+
+trap OBJECT IDENTIFIER::= { ctp 6 0 }
+
+nodeFanTrap NOTIFICATION-TYPE
+	OBJECTS { nodeFan }
+	STATUS current
+	DESCRIPTION
+		"Overall CTP1000 Fan Status or CTP2000 Fan and/or Power Status (0=OK, 1=Bad)"
+	::= { trap 1 }
+
+nodePowerTrap NOTIFICATION-TYPE
+	OBJECTS { nodePower }
+	STATUS current
+	DESCRIPTION
+		"O"
+	::= { trap 2 }
+
+nodeTemperatureTrap NOTIFICATION-TYPE
+	OBJECTS { nodeTemperature }
+	STATUS current
+	DESCRIPTION
+		"Trap when a supply goes above Maximum Temperature Threshold"
+	::= { trap 3 }
+
+nodeRefChangeTrap NOTIFICATION-TYPE
+	OBJECTS { nodeRefChange }
+	STATUS current
+	DESCRIPTION
+		"Current Node Clock reference in use"
+	::= { trap 4 }
+
+nodeRefValidChangeTrap NOTIFICATION-TYPE
+	OBJECTS { nodeRefValidChange }
+	STATUS current
+	DESCRIPTION
+		"Node reference validity status"
+	::= { trap 5 }
+
+bundleRunStateTrap NOTIFICATION-TYPE
+	OBJECTS { bundleRunState }
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) current state"
+	::= { trap 6 }
+
+bundleOverFlowTrap NOTIFICATION-TYPE
+	OBJECTS { bundleOverFlow }
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) overflow event count"
+	::= { trap 7 }
+
+bundleUnderFlowTrap NOTIFICATION-TYPE
+	OBJECTS { bundleUnderFlow }
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) underflow event occurs"
+	::= { trap 8 }
+
+bundleStarveTrap NOTIFICATION-TYPE
+	OBJECTS { bundleStarve }
+	STATUS current
+	DESCRIPTION
+		"(C) Port (of bundle) Starvation count"
+	::= { trap 9 }
+
+bundleTtBadTrap NOTIFICATION-TYPE
+	OBJECTS { bundleTtBad }
+	STATUS current
+	DESCRIPTION
+		"(C/S) Port (of bundle) Bad TT value"
+	::= { trap 10 }
+
+---------------------------------
+-- Aricent PR 1382778 fix - Start
+---------------------------------
+bundleT1AlarmTrap NOTIFICATION-TYPE
+        OBJECTS { bundleT1AlarmTrap }
+        STATUS current
+        DESCRIPTION
+                "(C/S) Port (of bundle) T1 Alarm"
+        ::= { trap 11 }
+
+bundlePtMissingTrap NOTIFICATION-TYPE
+        OBJECTS { bundlePtMissing }
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) missing packets count"
+        ::= { trap 12 }
+
+bundlePtLateTrap NOTIFICATION-TYPE
+        OBJECTS { bundlePtLate }
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) late packets count"
+        ::= { trap 13 }
+
+---------------------------------
+-- Aricent PR 1382778 fix - End
+---------------------------------
+
+nodePowerMissingTrap NOTIFICATION-TYPE
+	OBJECTS { nodePowerMissing }
+	STATUS current
+	DESCRIPTION
+		"Power supply missing status 0: presents 1: missing"
+	::= { trap 14 }
+
+---------------------------------
+-- Aricent PR 1351742 fix - Start
+---------------------------------
+bundleSdInactiveTrap NOTIFICATION-TYPE
+        OBJECTS { bundleSdInactive }
+        STATUS current
+        DESCRIPTION
+                "(C) Port (of bundle) goes to SdInactive"
+        ::= { trap 15 }
+-------------------------------
+-- Aricent PR 1351742 fix - End
+-------------------------------
+
+---------------------------------
+-- Aricent PR 1362733 fix - Start
+---------------------------------
+bundleAddTrap NOTIFICATION-TYPE
+        OBJECTS { bundleAdd }
+        STATUS current
+        DESCRIPTION
+                "Bundle Add event occurs"
+        ::= { trap 16 }
+
+bundleDisableTrap NOTIFICATION-TYPE
+        OBJECTS { bundleDisable }
+        STATUS current
+        DESCRIPTION
+                "Bundle Disable event occurs"
+        ::= { trap 17 }
+
+bundleCfgChgTrap NOTIFICATION-TYPE
+        OBJECTS { bundleCfgChg }
+        STATUS current
+        DESCRIPTION
+                "Change in Port or Bundle configuration event occurs"
+        ::= { trap 18 }
+
+bundleActivateTrap NOTIFICATION-TYPE
+        OBJECTS { bundleActivate }
+        STATUS current
+        DESCRIPTION
+                "Bundle Activate event occurs"
+        ::= { trap 19 }
+
+bundleDeleteTrap NOTIFICATION-TYPE
+        OBJECTS { bundleDelete }
+        STATUS current
+        DESCRIPTION
+                "Bundle Delete event occurs"
+        ::= { trap 20 }
+
+ntpCfgChgTrap NOTIFICATION-TYPE
+        OBJECTS { ntpCfgChg }
+        STATUS current
+        DESCRIPTION
+                "Change in NTP configuration event occurs"
+        ::= { trap 21 }
+
+ntpStatusTrap NOTIFICATION-TYPE
+        OBJECTS { ntpStatus }
+        STATUS current
+        DESCRIPTION
+                "NTP status: Sync or Not in Sync with NTP server"
+        ::= { trap 22 }
+
+nodeTimeChangeTrap NOTIFICATION-TYPE
+        OBJECTS { nodeTimeChange }
+        STATUS current
+        DESCRIPTION
+                "Change of system date/time event occurs"
+        ::= { trap 23 }
+-------------------------------
+-- Aricent PR 1362733 fix - End
+-------------------------------
+END

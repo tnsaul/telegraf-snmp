@@ -1,0 +1,1483 @@
+CMC-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE, Unsigned32 FROM SNMPv2-SMI
+    DateAndTime FROM SNMPv2-TC
+    products FROM RBT-MIB;
+
+cmc MODULE-IDENTITY
+        LAST-UPDATED        "201309030000Z"
+        ORGANIZATION        "Riverbed Technology, Inc."
+        CONTACT-INFO
+        "  Riverbed Technical Support
+           support@riverbed.com"
+        DESCRIPTION
+            "Added some missing appConnNotif status values"
+        REVISION            "201309030000Z"
+        DESCRIPTION
+            "Added Granite Core and Whitewater and SH-EX support"
+        REVISION            "201211290000Z"
+        DESCRIPTION
+            "Added autolicense trap."
+        REVISION            "201206270000Z"
+        DESCRIPTION
+            "Removed autolicense trap"
+        REVISION            "201205030000Z"
+        DESCRIPTION
+            "Added new notification for appliance configuration change"
+        REVISION            "201103280000Z"
+        DESCRIPTION
+            "Revived and repurposed the Appliance object as a general appliance
+             table. Added MobileController support."
+        REVISION            "201012180000Z"
+        DESCRIPTION
+            "Added 8 new traps"
+        REVISION            "201009200000Z"
+        DESCRIPTION
+            "Oficially Added Steelhead and Interceptor support, deprecated the
+             Appliances objects"
+        REVISION            "201007010000Z"
+        DESCRIPTION         "Central Management Console MIB 6.1 Revisions"
+        REVISION            "201001210000Z"
+        DESCRIPTION         "Central Management Console MIB 6.1 Revisions"
+        REVISION            "200912050000Z"
+        DESCRIPTION         "Central Management Console MIB"
+        REVISION            "200910150000Z"
+        DESCRIPTION         "Updated object descriptions"
+        REVISION            "200909230000Z"
+        DESCRIPTION         "Updated contact information"
+        REVISION            "200909160000Z"
+        DESCRIPTION         "Riverbed CMC 5.5.1 Revisions"
+        REVISION            "200907130000Z"
+        DESCRIPTION         "Riverbed CMC 5.0 Revisions"
+        REVISION            "200608040000Z"
+        DESCRIPTION         "Riverbed CMC 3.0 Revisions"
+        REVISION            "200603140000Z"
+        DESCRIPTION         "Riverbed CMC 2.1.1 Revisions"
+        ::= { products 2 }
+
+system OBJECT IDENTIFIER
+    ::= { cmc 1 }
+
+status OBJECT IDENTIFIER
+    ::= { cmc 2 }
+
+config OBJECT IDENTIFIER
+    ::= { cmc 3 }
+
+alarms OBJECT IDENTIFIER
+    ::= { cmc 4 }
+
+statistics OBJECT IDENTIFIER
+    ::= { cmc 5 }
+
+groups OBJECT IDENTIFIER
+    ::= { cmc 6 }
+
+appliances OBJECT IDENTIFIER
+    ::= { cmc 7 }
+
+steelheads OBJECT IDENTIFIER
+    ::= { cmc 8 }
+
+interceptors OBJECT IDENTIFIER
+    ::= { cmc 9 }
+
+mobileControllers OBJECT IDENTIFIER
+    ::= { cmc 10 }
+
+steelheadExs OBJECT IDENTIFIER
+    ::= { cmc 11 }
+
+graniteCores OBJECT IDENTIFIER
+    ::= { cmc 12 }
+
+whitewaters OBJECT IDENTIFIER
+    ::= { cmc 13 }
+
+--
+--
+-- SYSTEM
+--
+--
+
+model OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Appliance model"
+    ::= { system 1 }
+
+serialNumber OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Appliance serial number"
+    ::= { system 2 }
+
+systemVersion OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System software version string"
+    ::= { system 3 }
+
+--
+--
+-- STATUS
+--
+--
+
+systemClock OBJECT-TYPE
+    SYNTAX      DateAndTime
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "System clock time"
+    ::= { status 1 }
+
+health OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current health of the system. Possible health values are
+             Healthy, Degraded, and Critical"
+    ::= { status 2 }
+
+procTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF ProcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "List of managed processes"
+    ::= { status 3 }
+
+procEntry OBJECT-TYPE
+    SYNTAX      ProcEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one process"
+    INDEX   { procIndex }
+    ::= { procTable 1 }
+
+ProcEntry ::=
+    SEQUENCE {
+        procIndex             Unsigned32,
+        procName              OCTET STRING,
+        procStatus            OCTET STRING,
+        procNumFailures       Unsigned32
+    }
+
+procIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric unique ID of process"
+    ::= { procEntry 1 }
+
+procName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Unique name of the process"
+    ::= { procEntry 2 }
+
+procStatus OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Current state of the process. Possible process states are
+             none, unmanaged, running, com1_sent, term1_sent, term2_sent,
+             term3_sent, pending, and stopped"
+    ::= { procEntry 3 }
+
+procNumFailures OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Number of times process has crashed or exited unexpectedly"
+    ::= { procEntry 4 }
+
+systemTemperature OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION 
+            "The temperature of the system (C)"
+    ::= { status 4 }
+
+healthNotes OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Some notes regarding the health of the system. This value
+             could be empty,Needs Attention, or Stats Migration in Progress"
+    ::= { status 5 }
+
+--
+--
+-- CONFIG
+--
+--
+
+activeConfig OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Name of the current active configuration"
+    ::= { config 1 }
+
+--
+--
+-- ALARMS
+--
+--
+
+alarmsPrefix OBJECT IDENTIFIER
+    ::= { alarms 1 }
+
+procCrash NOTIFICATION-TYPE
+    OBJECTS { procName }
+    STATUS  current
+    DESCRIPTION
+            "A procCrash trap signifies that a process managed by PM
+	         has crashed and left a core file.  The variable sent with
+             the notification indicates the name of the process 
+             that crashed."
+    ::= { alarmsPrefix 1 }
+
+procExit NOTIFICATION-TYPE
+    OBJECTS { procName }
+    STATUS  current
+    DESCRIPTION
+            "A procExit trap signifies that a process managed by PM
+	         has exited unexpectedly, but not left a core file.
+	         The variable sent with the notification indicates the name
+             of the process that exited."
+    ::= { alarmsPrefix 2 }
+
+cpuUtil NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Indicates that the average CPU utilization in the past minute 
+             has gone above the acceptable threshold"
+    ::= { alarmsPrefix 3 }
+
+pagingActivity NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "Indicates that the system has been paging excessively (thrashing)"
+    ::= { alarmsPrefix 4 }
+
+confModeEnter NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A user has entered configuration mode"
+    ::= { alarmsPrefix 5 }
+
+confModeExit NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A user has exited configuration mode"
+    ::= { alarmsPrefix 6 }
+
+powerSupplyError NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "A power supply on the appliance has failed. Not supported on all models"
+    ::= { alarmsPrefix 7 }
+
+fanError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A fan error has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 8 }
+
+memoryError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A memory error has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 9 }
+
+ipmi NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "An IPMI event has been detected on the appliance. Not supported on all models"
+    ::= { alarmsPrefix 10 }
+
+configChange NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A change has been made to the system's configuration"
+    ::= { alarmsPrefix 11 }
+
+temperatureWarning NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature has exceeded the threshold" 
+    ::= { alarmsPrefix 12 }
+
+temperatureCritical NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature has reached a critical stage" 
+    ::= { alarmsPrefix 13 }
+
+extBackupFailed NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The external backup or restore has failed"
+    ::= { alarmsPrefix 14 }
+
+appHealthNotif NOTIFICATION-TYPE
+    OBJECTS      { typeName, applianceSerial, applianceDisplayAddr, applianceHealth }
+    STATUS       current
+    DESCRIPTION
+            "A appHealthNotif trap signifies that an appliance managed by
+            the CMC has changed health state. The variables sent with the
+            notification indicates the serial number of the appliance,
+            the display address, and the health state that it is in.
+            The health status can be the following values:
+                       Healthy
+                       Admission Control
+                       Degraded
+                       Critical
+            "
+    ::= { alarmsPrefix 15 }
+
+appConnNotif NOTIFICATION-TYPE
+    OBJECTS     { typeName, applianceSerial, applianceDisplayAddr, applianceConn }
+    STATUS      current
+    DESCRIPTION
+            "A appConnNotif trap signifies that an appliance managed by
+            the CMC has changed connection state. The variables sent with
+            the notification indicates the serial number of the appliance,
+            the display address, and the new connection status it is in.
+            The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: RGP failure
+                        Disconnected: could not find SSH-2 client
+                        Disconnected: not a valid appliance
+                        Disconnected: invalid username/password
+                        Disconnected: unreachable address
+                        Disconnected: can't resolve hostname
+                        Disconnected: network time out
+                        Disconnected: network interruption
+                        Disconnected: untrusted
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: reconnect requested
+                        Disconnected: appliance disabled
+                        Disconnected: appliance modified
+                        Disconnected: appliance deleted
+                        Disconnected: timeout in initial handshake
+                        Disconnected: handshake failure
+                        Disconnected: unsupported appliance
+                        Disconnected: request timed out
+                        Disconnected: not enough licenses
+                        Disconnected: rbmd unavailable
+                        Disconnected: missing or invalid base license
+                        Disconnected: product mismatch
+                        Disconnected: admin user required
+                        Disconnected: password expired
+                        Disconnected: no address specified
+                        Disconnected: invalid serial number
+                        Connected
+           "
+    ::= { alarmsPrefix 16 }
+
+appBackupSuccess NOTIFICATION-TYPE
+    OBJECTS     { typeName, applianceSerial, applianceDisplayAddr,  applianceBackup}
+    STATUS      current
+    DESCRIPTION
+            "A appBackupSuccess trap signifies that an appliance managed by
+            the CMC has successfully completed a backup. The variables sent
+            with the notification indicates the appliance serial number,
+            the display address, and the time of the backup."
+    ::= { alarmsPrefix 17 }
+
+appBackupFailure NOTIFICATION-TYPE
+    OBJECTS     { typeName, applianceSerial, applianceDisplayAddr,  applianceBackup}
+    STATUS      current
+    DESCRIPTION
+            "A appBackupFailure trap signifies that an appliance managed by
+            the CMC has failed a backup. The variables sent
+            with the notification indicates the appliance serial number,
+             the display address, and the time of the backup."
+    ::= { alarmsPrefix 18 }
+
+underprovisionedVM NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "VM has too little storage or memory"
+    ::= { alarmsPrefix 19 }
+
+
+autoconnectFailed NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "SH could not autoconnect due to license depletion"
+    ::= { alarmsPrefix 20 }
+
+licenseFailureRegimeChange NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Licensing status has changed"
+    ::= { alarmsPrefix 21 }
+
+certsExpiring NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "SSL certificates expiring"
+    ::= { alarmsPrefix 22 }
+
+fsMntBytes NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "System disk full"
+    ::= { alarmsPrefix 23 }
+
+linkState NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Network interface link errors"
+    ::= { alarmsPrefix 24 }
+
+raidError NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Error on RAID array of the appliance.  Not supported on all models"
+    ::= { alarmsPrefix 25 }
+
+trapTest NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Trap test"
+    ::= { alarmsPrefix 26 }
+
+configSave NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The current appliance configuration has been saved"
+    ::= { alarmsPrefix 27 }
+
+tcpDumpStarted NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A TCP Dump has been started"
+    ::= { alarmsPrefix 28 }
+
+tcpDumpScheduled NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A TCP Dump has been scheduled"
+    ::= { alarmsPrefix 29 }
+
+newUserCreated NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A new user has been created"
+    ::= { alarmsPrefix 30 }
+
+cliUserLogin NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A user has just logged-in via CLI"
+    ::= { alarmsPrefix 31 }
+
+cliUserLogout NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A CLI user has just logged-out"
+    ::= { alarmsPrefix 32 }
+
+webUserLogin NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A user has just logged-in via the Web UI"
+    ::= { alarmsPrefix 33 }
+
+webUserLogout NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A user has just logged-out via the Web UI"
+    ::= { alarmsPrefix 34 }
+
+applianceConfigChange NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Appliance configuration has been changed"
+    ::= { alarmsPrefix 35 }
+
+cpuUtilClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The average CPU utilization has fallen back
+             within the acceptable threshold"
+    ::= { alarmsPrefix 1003 }
+
+pagingActivityClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "The system has stopped paging excessively (thrashing)"
+    ::= { alarmsPrefix 1004 }
+
+powerSupplyErrorClear NOTIFICATION-TYPE
+    STATUS  current
+    DESCRIPTION
+            "All power supplies are now functioning normally" -- Not supported on all models
+    ::= { alarmsPrefix 1007 }
+
+fanErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "All system fans are now functioning normally" -- Not supported on all models
+    ::= { alarmsPrefix 1008 }
+
+memoryErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "A memory error has been rectified on the appliance" -- Not supported on all models
+    ::= { alarmsPrefix 1009 }
+
+ipmiClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "An IPMI event has been rectified on the appliance" -- Not supported on all models
+    ::= { alarmsPrefix 1010 }
+
+temperatureNormal NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature is back within the threshold" 
+    ::= { alarmsPrefix 1012 }
+
+temperatureNonCritical NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The system temperature is no longer in a critical stage" 
+    ::= { alarmsPrefix 1013 }
+
+extBackupFailedClear  NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "The external backup or restore failure has been
+            addressed"
+    ::= { alarmsPrefix 1014 }
+
+underprovisionedVMClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "VM storage and memory are now adequate"
+    ::= { alarmsPrefix 1019 }
+
+certsExpiringClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "SSL certificates no longer expiring"
+    ::= { alarmsPrefix 1022 }
+
+fsMntBytesClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "System disk no longer full"
+    ::= { alarmsPrefix 1023 }
+
+linkStateClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Interface has regained link"
+    ::= { alarmsPrefix 1024 }
+
+raidErrorClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "RAID ok now"
+    ::= { alarmsPrefix 1025 }
+
+applianceConfigChangeClear NOTIFICATION-TYPE
+    STATUS current
+    DESCRIPTION
+            "Successfully pushed policy or restored configuration"
+    ::= { alarmsPrefix 1035 }
+
+--
+-- 
+-- STATISTICS
+--
+--
+
+cpuLoad OBJECT IDENTIFIER
+    ::= { statistics 1 }
+
+cpuLoad1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "One-minute CPU load in hundredths"
+    ::= { cpuLoad 1 }
+
+cpuLoad5 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Five-minute CPU load in hundredths"
+    ::= { cpuLoad 2 }
+
+cpuLoad15 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Fifteen-minute CPU load in hundredths"
+    ::= { cpuLoad 3 }
+
+cpuUtil1 OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+        "Percentage CPU utilization, aggregated across all CPUs, rolling
+	average over the past minute"
+    ::= { cpuLoad 4 }
+
+--
+--
+-- GROUPS
+--
+--
+groupTable OBJECT-TYPE
+    SYNTAX      SEQUENCE OF GroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "A table listing each of the logical groups of appliance and their
+             related information"
+    ::= { groups 1 }
+
+groupEntry OBJECT-TYPE
+    SYNTAX      GroupEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Entry for one group"
+    INDEX   { groupIndex }
+    ::= { groupTable 1 }
+
+GroupEntry ::=
+    SEQUENCE {
+        groupIndex             Unsigned32,
+        groupName              OCTET STRING,
+        groupComment           OCTET STRING,
+        groupAppliances        OCTET STRING
+    }
+
+groupIndex OBJECT-TYPE
+    SYNTAX      Unsigned32
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+            "Synthetic numeric unique ID for groups"
+    ::= { groupEntry 1 }
+
+groupName OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "Unique name for identifying a group"
+    ::= { groupEntry 2 }
+
+groupComment OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A user specified comment for the group"
+    ::= { groupEntry 3 }
+
+groupAppliances OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+            "A list of appliances that are part of this group"
+    ::= { groupEntry 4 }
+
+
+--
+--
+-- APPLIANCES
+--
+--
+applianceTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF ApplianceEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of all appliances"
+    ::= { appliances 1 }
+
+applianceEntry OBJECT-TYPE
+    SYNTAX       ApplianceEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one appliance"
+    INDEX   { applianceIndex }
+    ::= { applianceTable 1 }
+
+ApplianceEntry ::=
+    SEQUENCE {
+        typeIndex                Unsigned32,
+        typeName                 OCTET STRING,
+        applianceIndex           Unsigned32,
+        applianceSerial          OCTET STRING,
+        applianceHealth          OCTET STRING,
+        applianceConn            OCTET STRING,
+        applianceDisplayAddr     OCTET STRING,
+        applianceBackup          OCTET STRING,
+        applianceHealthNotes     OCTET STRING
+    }
+
+typeIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric ID for the product of an appliance"
+    ::= { applianceEntry 1 }
+
+typeName OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed appliance product type"
+    ::= { applianceEntry 2 }
+
+applianceIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an appliance"
+    ::= { applianceEntry 3 }
+
+applianceSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed appliance serial number"
+    ::= { applianceEntry 4 }
+
+applianceHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Appliance current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { applianceEntry 5 }
+
+applianceConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Appliance current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { applianceEntry 6 }
+
+applianceDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed appliance display address"
+    ::= { applianceEntry 7 }
+
+applianceBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed appliance backup timestamp"
+    ::= { applianceEntry 8 }
+
+applianceHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Appliance current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { applianceEntry 9 }
+
+--
+--
+-- STEELHEADS
+--
+--
+steelheadTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SteelheadEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of steelheads managed by this CMC"
+    ::= { steelheads 1 }
+
+steelheadEntry OBJECT-TYPE
+    SYNTAX       SteelheadEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one steelhead"
+    INDEX   { steelheadIndex }
+    ::= { steelheadTable 1 }
+
+SteelheadEntry ::=
+    SEQUENCE {
+        steelheadIndex           Unsigned32,
+        steelheadSerial          OCTET STRING,
+        steelheadHealth          OCTET STRING,
+        steelheadConn            OCTET STRING,
+        steelheadDisplayAddr     OCTET STRING,
+        steelheadBackup          OCTET STRING,
+        steelheadHealthNotes     OCTET STRING
+    }
+
+steelheadIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for a steelhead"
+    ::= { steelheadEntry 1 }
+
+steelheadSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelhead serial number"
+    ::= { steelheadEntry 2 }
+
+steelheadHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Steelhead current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { steelheadEntry 3 }
+
+steelheadConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Steelhead current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { steelheadEntry 4 }
+
+steelheadDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelhead display address"
+    ::= { steelheadEntry 5 }
+
+steelheadBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelhead backup timestamp"
+    ::= { steelheadEntry 6 }
+
+steelheadHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "steelhead current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { steelheadEntry 7 }
+
+--
+--
+-- INTERCEPTORS
+--
+--
+interceptorTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF InterceptorEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of interceptors managed by this CMC"
+    ::= { interceptors 1 }
+
+interceptorEntry OBJECT-TYPE
+    SYNTAX       InterceptorEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one interceptor"
+    INDEX   { interceptorIndex }
+    ::= { interceptorTable 1 }
+
+InterceptorEntry ::=
+    SEQUENCE {
+        interceptorIndex           Unsigned32,
+        interceptorSerial          OCTET STRING,
+        interceptorHealth          OCTET STRING,
+        interceptorConn            OCTET STRING,
+        interceptorDisplayAddr     OCTET STRING,
+        interceptorBackup          OCTET STRING,
+        interceptorHealthNotes     OCTET STRING
+    }
+
+interceptorIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an interceptor"
+    ::= { interceptorEntry 1 }
+
+interceptorSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed interceptor serial number"
+    ::= { interceptorEntry 2 }
+
+interceptorHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "interceptor current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { interceptorEntry 3 }
+
+interceptorConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "interceptor current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { interceptorEntry 4 }
+
+interceptorDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed interceptor display address"
+    ::= { interceptorEntry 5 }
+
+interceptorBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed interceptor backup timestamp"
+    ::= { interceptorEntry 6 }
+
+interceptorHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "interceptor current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { interceptorEntry 7 }
+
+--
+--
+-- MOBILECONTROLLERS
+--
+--
+mobileControllerTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF MobileControllerEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of mobileControllers managed by this CMC"
+    ::= { mobileControllers 1 }
+
+mobileControllerEntry OBJECT-TYPE
+    SYNTAX       MobileControllerEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one mobileController"
+    INDEX   { mobileControllerIndex }
+    ::= { mobileControllerTable 1 }
+
+MobileControllerEntry ::=
+    SEQUENCE {
+        mobileControllerIndex           Unsigned32,
+        mobileControllerSerial          OCTET STRING,
+        mobileControllerHealth          OCTET STRING,
+        mobileControllerConn            OCTET STRING,
+        mobileControllerDisplayAddr     OCTET STRING,
+        mobileControllerBackup          OCTET STRING,
+        mobileControllerHealthNotes     OCTET STRING
+    }
+
+mobileControllerIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an mobileController"
+    ::= { mobileControllerEntry 1 }
+
+mobileControllerSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed mobileController serial number"
+    ::= { mobileControllerEntry 2 }
+
+mobileControllerHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "mobileController current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { mobileControllerEntry 3 }
+
+mobileControllerConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "mobileController current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { mobileControllerEntry 4 }
+
+mobileControllerDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed mobileController display address"
+    ::= { mobileControllerEntry 5 }
+
+mobileControllerBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed mobileController backup timestamp"
+    ::= { mobileControllerEntry 6 }
+
+mobileControllerHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "mobileController current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { mobileControllerEntry 7 }
+
+
+--
+--
+-- Steelhead EX
+--
+--
+steelheadExTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF SteelheadExEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of steelheadExs managed by this CMC"
+    ::= { steelheadExs 1 }
+
+steelheadExEntry OBJECT-TYPE
+    SYNTAX       SteelheadExEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one steelheadEx"
+    INDEX   { steelheadExIndex }
+    ::= { steelheadExTable 1 }
+
+SteelheadExEntry ::=
+    SEQUENCE {
+        steelheadExIndex           Unsigned32,
+        steelheadExSerial          OCTET STRING,
+        steelheadExHealth          OCTET STRING,
+        steelheadExConn            OCTET STRING,
+        steelheadExDisplayAddr     OCTET STRING,
+        steelheadExBackup          OCTET STRING,
+        steelheadExHealthNotes     OCTET STRING
+    }
+
+steelheadExIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an steelheadEx"
+    ::= { steelheadExEntry 1 }
+
+steelheadExSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelheadEx serial number"
+    ::= { steelheadExEntry 2 }
+
+steelheadExHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "steelheadEx current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { steelheadExEntry 3 }
+
+steelheadExConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "steelheadEx current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { steelheadExEntry 4 }
+
+steelheadExDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelheadEx display address"
+    ::= { steelheadExEntry 5 }
+
+steelheadExBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed steelheadEx backup timestamp"
+    ::= { steelheadExEntry 6 }
+
+steelheadExHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "steelheadEx current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { steelheadExEntry 7 }
+
+--
+--
+-- Granite Core
+--
+--
+graniteCoreTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF GraniteCoreEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of graniteCores managed by this CMC"
+    ::= { graniteCores 1 }
+
+graniteCoreEntry OBJECT-TYPE
+    SYNTAX       GraniteCoreEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one graniteCore"
+    INDEX   { graniteCoreIndex }
+    ::= { graniteCoreTable 1 }
+
+GraniteCoreEntry ::=
+    SEQUENCE {
+        graniteCoreIndex           Unsigned32,
+        graniteCoreSerial          OCTET STRING,
+        graniteCoreHealth          OCTET STRING,
+        graniteCoreConn            OCTET STRING,
+        graniteCoreDisplayAddr     OCTET STRING,
+        graniteCoreBackup          OCTET STRING,
+        graniteCoreHealthNotes     OCTET STRING
+    }
+
+graniteCoreIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an graniteCore"
+    ::= { graniteCoreEntry 1 }
+
+graniteCoreSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed graniteCore serial number"
+    ::= { graniteCoreEntry 2 }
+
+graniteCoreHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "graniteCore current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { graniteCoreEntry 3 }
+
+graniteCoreConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "graniteCore current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { graniteCoreEntry 4 }
+
+graniteCoreDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed graniteCore display address"
+    ::= { graniteCoreEntry 5 }
+
+graniteCoreBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed graniteCore backup timestamp"
+    ::= { graniteCoreEntry 6 }
+
+graniteCoreHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "graniteCore current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { graniteCoreEntry 7 }
+
+--
+--
+-- Whitewater
+--
+--
+whitewaterTable OBJECT-TYPE
+    SYNTAX       SEQUENCE OF WhitewaterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "List of whitewaters managed by this CMC"
+    ::= { whitewaters 1 }
+
+whitewaterEntry OBJECT-TYPE
+    SYNTAX       WhitewaterEntry
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Entry for one whitewater"
+    INDEX   { whitewaterIndex }
+    ::= { whitewaterTable 1 }
+
+WhitewaterEntry ::=
+    SEQUENCE {
+        whitewaterIndex           Unsigned32,
+        whitewaterSerial          OCTET STRING,
+        whitewaterHealth          OCTET STRING,
+        whitewaterConn            OCTET STRING,
+        whitewaterDisplayAddr     OCTET STRING,
+        whitewaterBackup          OCTET STRING,
+        whitewaterHealthNotes     OCTET STRING
+    }
+
+whitewaterIndex OBJECT-TYPE
+    SYNTAX       Unsigned32
+    MAX-ACCESS   not-accessible
+    STATUS       current
+    DESCRIPTION
+            "Synthetic numeric unique ID for an whitewater"
+    ::= { whitewaterEntry 1 }
+
+whitewaterSerial OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed whitewater serial number"
+    ::= { whitewaterEntry 2 }
+
+whitewaterHealth OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "whitewater current health. Possible health values are
+             Healthy, Admission Control, Degraded, and Critical"
+    ::= { whitewaterEntry 3 }
+
+whitewaterConn OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "whitewater current connection status.
+             The connection status can be the following values:
+                        Unknown
+                        Disconnected
+                        Disconnected: unreachable address
+                        Disconnected: invalid username/password
+                        Disconnected: not a valid appliance
+                        Disconnected: host key verification failed
+                        Disconnected: already being managed
+                        Disconnected: Untrusted
+                        Connected"
+    ::= { whitewaterEntry 4 }
+
+whitewaterDisplayAddr OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed whitewater display address"
+    ::= { whitewaterEntry 5 }
+
+whitewaterBackup OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "Managed whitewater backup timestamp"
+    ::= { whitewaterEntry 6 }
+
+whitewaterHealthNotes OBJECT-TYPE
+    SYNTAX       OCTET STRING
+    MAX-ACCESS   read-only
+    STATUS       current
+    DESCRIPTION
+            "whitewater current health notes.
+            The health notes can be the following values:
+                        Empty String
+                        Needs Attention
+                        Secure Vault Not Initialized
+                        Secure Vault Needs Attention
+                        Secure Vault Not Ready"
+    ::= { whitewaterEntry 7 }
+
+END
