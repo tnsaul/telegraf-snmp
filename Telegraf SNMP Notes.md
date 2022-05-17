@@ -263,7 +263,7 @@ go mod tidy
 
 
 
-This produces a file based on the (static coded) starting directory "/home/vagrant/vagrant_data/netsnmp/net-snmp-5.9.1/mibs"
+This produces a file based on the (static coded) starting directory "/home/vagrant/vagrant_data/snmp-telegraf-git/telegraf-snmp/mibs" (it is actually a relative path in  main.go file).
 
 ```
 go run . > results.json
