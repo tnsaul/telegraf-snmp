@@ -195,6 +195,7 @@ def apply(metric):
         metric.fields["severity"] = ""
         metric.fields["summary"] = "{{ v["description"] }}"
         
+        return metric
     {% endfor%}
     return metric 
 \'\'\'
