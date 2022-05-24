@@ -259,14 +259,17 @@ go mod init go_mib_parser
 go mod tidy
 ```
 
-
-
-
-
-This produces a file based on the (static coded) starting directory "/home/vagrant/vagrant_data/snmp-telegraf-git/telegraf-snmp/mibs" (it is actually a relative path in  main.go file).
+This produces a file **based on the (static coded) starting directory** "/home/vagrant/vagrant_data/snmp-telegraf-git/telegraf-snmp/mibs" (it is actually a relative path in  main.go file as "../mibs").
 
 ```
 go run . > results.json
+```
+
+Can build the file then do much the same
+
+```
+go build
+./go_mib_parser > result.json
 ```
 
 ## Build Telegraf from Source
@@ -587,3 +590,86 @@ The whole fred directory can be loaded under /etc/telegraf/telegraf.d and will b
 ```
 ./telegraf --config-directory /etc/telegraf/telegraf.d
 ```
+
+### Basic  approach for the POC
+
+1. Create a base directory called "poc"
+
+2. Copy "telegraf-snmp/go_mib_parser/go_mib_parser" from the GIT POC repo download to this directory.  This is the GO MIB parser.
+
+3. Copy "telegraf-snmp/python/MIB-Telegraf-config.py" to this directory.  This is the python Telegraf configuration builder.
+
+4. Create a sub-directory  "poc/mibs".  Put all the MIBs to be parsed in there in any (reasonable) structure, the parser will walk the tree.
+
+5. Run the MIB Parser:
+
+```
+go_mib_parser > results.json
+```
+
+6. The results.json will look like crap unless you have an editor that can prettyprint JSON.  VSC can do this, but it is still a big file at around 28MB.
+
+7. Run the python config builder:
+
+```
+python3 MIB-Telegraf-config.py 
+Usage: MIB-Telegraf-config.py <input fille> <output DIRECTORY>
+
+
+# So the typical POC call is:
+python3 MIB-Telegraf-config.py result.json fred
+```
+
+8. This should give a folder called "fred" with the configurations in there.
+
+9. Assuming that telgraf is already installed and using default directories, copy the configurations.
+
+```
+sudo cp telegraf-snmp/telegraf/telegraf.conf /telegraf.conf
+sudo rm -rf /etc/telegraf/telegraf.d/fred
+sudo cp -r fred /etc/telegraf/telegraf.d
+```
+
+10. You WILL need to eventually adjust the OUTPUT on the telegraf.conf configuration as it just writes to STDOUT.
+
+11. Please eventually use a better directory name than "fred".
+
+12. You may need to stop the telegraf service if it auto-starts as it did for me on Ubuntu.
+
+```
+sudo systemctl stop telegraf.service
+```
+
+13. You should be able to start telegraf and check the loading of the MIBs.
+
+```
+telegraf --config-directory /etc/telegraf/telegraf.d
+```
+
+14. You should see something like the following at the start:
+
+```
+2022-05-24T21:06:19Z I! Using config file: /etc/telegraf/telegraf.conf
+2022-05-24T21:06:19Z W! DeprecationWarning: Option "timeout" of plugin "inputs.snmp_trap" deprecated since version 1.20.0 and will be removed in 2.0.0: unused option
+2022-05-24T21:06:19Z I! Starting Telegraf 1.22.3
+2022-05-24T21:06:19Z I! Loaded inputs: snmp_trap
+2022-05-24T21:06:19Z I! Loaded aggregators: 
+2022-05-24T21:06:19Z I! Loaded processors: enum (95x) starlark (36x)
+2022-05-24T21:06:19Z I! Loaded outputs: file
+2022-05-24T21:06:19Z I! Tags enabled: host=tnstelegraf
+2022-05-24T21:06:19Z W! Deprecated inputs: 0 and 1 options
+
+```
+
+15. The main check is for the line with "Loaded processors: enum (95x) starlark (36x)" to confirm it saw the configurations in the "fred" folder.
+
+16. If there were no errors in the configs then the last line should read:
+
+```
+2022-05-24T21:06:24Z I! [inputs.snmp_trap] Listening on udp://:1162
+```
+
+18. Now it is a case of:
+- playing with the python code to change the Starlark templates if desired.
+
+- updating the Starlark configurations to match the current NC Rules as far as you see appropriate.
